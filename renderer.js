@@ -117,3 +117,42 @@ function drawSoftFill(yBase, amplitude, frequency, speed, color, thickness) {
   context.fill();
 }
 
+function renderFrame(now) {
+  time += 0.016;
+  updateAudioLevel(now);
+
+  context.clearRect(0, 0, width, height);
+  drawGlowBand();
+
+  const topBase = 62 + smoothedLevel * 14;
+  const bottomBase = height - 62 - smoothedLevel * 14;
+  const primaryAmplitude = 5 + smoothedLevel * 12;
+  const secondaryAmplitude = 2 + smoothedLevel * 6;
+
+  drawSoftFill(topBase, primaryAmplitude * 1.1, 0.0075, 0.38, theme.topGlow, 44);
+  drawSoftFill(bottomBase, primaryAmplitude * 0.9, 0.007, 0.32, theme.bottomGlow, 40);
+
+  drawWave(topBase, primaryAmplitude, 0.0105, 0.44, theme.topLine, 1.4, 0.8);
+  drawWave(topBase + 8, secondaryAmplitude, 0.014, 0.58, theme.topGlow, 1, 0.34);
+
+  drawWave(bottomBase, primaryAmplitude * 0.9, 0.0102, 0.34, theme.bottomLine, 1.25, 0.68);
+  drawWave(bottomBase - 8, secondaryAmplitude, 0.013, 0.48, theme.bottomGlow, 0.9, 0.28);
+
+  context.globalAlpha = 1;
+  context.shadowBlur = 0;
+
+  requestAnimationFrame(renderFrame);
+}
+
+window.addEventListener("resize", resizeCanvas);
+
+if (window.audioBridge) {
+  window.audioBridge.onLevel((payload) => {
+    if (payload && typeof payload.value === "number") {
+      incomingLevel = payload.value;
+    }
+  });
+}
+
+resizeCanvas();
+requestAnimationFrame(renderFrame);
