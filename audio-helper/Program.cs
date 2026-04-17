@@ -225,7 +225,8 @@ internal sealed class WasapiLoopbackCapture : IDisposable
 
     private static (SampleFormat Format, int BytesPerSample) DetectSampleFormat(IntPtr mixFormatPointer, WaveFormatEx mixFormat)
     {
-        var bytesPerSample = mixFormat.nBlockAlign / Math.Max(1, mixFormat.nChannels);
+        var channelCount = Math.Max(1, (int)mixFormat.nChannels);
+        var bytesPerSample = mixFormat.nBlockAlign / channelCount;
 
         return mixFormat.wFormatTag switch
         {
