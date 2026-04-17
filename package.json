@@ -1,0 +1,21 @@
+{
+  "name": "paraline",
+  "version": "0.1.0",
+  "description": "Transparent Electron desktop overlay with a simulated ambient music visualizer.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron ."
+  },
+  "keywords": [
+    "electron",
+    "overlay",
+    "visualizer",
+    "desktop"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^37.0.0"
+  }
+}
