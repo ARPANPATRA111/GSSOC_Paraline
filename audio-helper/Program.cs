@@ -346,7 +346,7 @@ internal static class WaveFormatTags
     public const ushort Extensible = 0xFFFE;
 }
 
-[StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential, Pack = 2)]
 internal struct WaveFormatEx
 {
     public ushort wFormatTag;
@@ -358,7 +358,7 @@ internal struct WaveFormatEx
     public ushort cbSize;
 }
 
-[StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential, Pack = 2)]
 internal struct WaveFormatExtensible
 {
     public WaveFormatEx Format;
