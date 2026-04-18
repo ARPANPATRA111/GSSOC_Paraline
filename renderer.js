@@ -61,6 +61,19 @@ const THEMES = {
   }
 };
 
+const REACTIVE_BORDER_STYLES = {
+  rainbow: { mode: "rainbow", saturation: 92, lightness: 64 },
+  neonBlue: { mode: "range", hueA: 192, hueB: 220, saturation: 98, lightness: 66 },
+  neonPurple: { mode: "range", hueA: 270, hueB: 304, saturation: 98, lightness: 70 },
+  warmGlow: { mode: "range", hueA: 22, hueB: 48, saturation: 96, lightness: 68 }
+};
+
+const FLOW_BORDER_STYLES = {
+  rainbow: { mode: "rainbow", saturation: 96, lightness: 64 },
+  cool: { mode: "range", hueA: 190, hueB: 228, saturation: 92, lightness: 66 },
+  warm: { mode: "range", hueA: 20, hueB: 52, saturation: 94, lightness: 68 }
+};
+
 const params = new URLSearchParams(window.location.search);
 const debugEnabled = params.get("debug") === "1";
 
@@ -221,6 +234,156 @@ function drawSoftFill(yBase, amplitude, frequency, speed, color, thickness, alph
   context.shadowBlur = 0;
   context.fillStyle = color;
   context.fill();
+}
+
+function drawReactiveBorderEdge(x1, y1, x2, y2, startDistance, perimeter, colorStyle, hueOffset, thickness, glowBlur, opacity) {
+  const edgeLength = Math.hypot(x2 - x1, y2 - y1);
+  const segmentCount = Math.max(1, Math.ceil(edgeLength / RAINBOW_SEGMENT_LENGTH));
+
+  for (let index = 0; index < segmentCount; index++) {
+    const startT = index / segmentCount;
+    const endT = (index + 1) / segmentCount;
+    const sx = x1 + (x2 - x1) * startT;
+    const sy = y1 + (y2 - y1) * startT;
+    const ex = x1 + (x2 - x1) * endT;
+    const ey = y1 + (y2 - y1) * endT;
+    const normalizedDistance = (startDistance + edgeLength * ((startT + endT) * 0.5)) / perimeter;
+    const color = resolveAnimatedColor(colorStyle, normalizedDistance, hueOffset, opacity);
+
+    context.beginPath();
+    context.moveTo(sx, sy);
+    context.lineTo(ex, ey);
+    context.strokeStyle = color;
+    context.lineWidth = thickness;
+    context.shadowBlur = glowBlur;
+    context.shadowColor = color;
+    context.stroke();
+  }
+}
+
+function drawReactiveBorder() {
+  const reactiveSettings = getReactiveBorderSettings();
+  const reactiveStyle = getReactiveBorderStyle();
+  const intensityMultiplier = getReactiveIntensityMultiplier();
+  const glowMultiplier = getGlowMultiplier(reactiveSettings.glowStrength);
+  const inset = RAINBOW_BORDER_INSET;
+  const thicknessBase = reactiveSettings.borderThickness === "medium" ? 3 : 2.15;
+  const thickness = thicknessBase + smoothedLevel * 1.15 * intensityMultiplier;
+  const edgeOffset = Math.max(1, thickness * 0.5) + 1;
+  const left = inset;
+  const top = inset;
+  const right = Math.max(left + 1, width - edgeOffset);
+  const bottom = Math.max(top + 1, height - edgeOffset);
+  const horizontal = right - left;
+  const vertical = bottom - top;
+  const perimeter = horizontal * 2 + vertical * 2;
+  const speed = 32 + smoothedLevel * 180 * intensityMultiplier;
+  const hueOffset = time * speed;
+  const glowBlur = (7 + smoothedLevel * 10) * glowMultiplier;
+  const opacity = 0.54 + smoothedLevel * 0.18 * intensityMultiplier;
+
+  if (performance.now() - lastRainbowMetricsAt > 1000) {
+    lastRainbowMetricsAt = performance.now();
+    console.log("[debug] reactive border metrics", {
+      width,
+      height,
+      left,
+      top,
+      right,
+      bottom,
+      thickness,
+      edgeOffset
+    });
+  }
+
+  context.globalAlpha = 1;
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  context.shadowBlur = 0;
+  context.strokeStyle = "rgba(255, 255, 255, 0.06)";
+  context.lineWidth = thickness + 0.8;
+  context.strokeRect(left, top, horizontal, vertical);
+
+  drawReactiveBorderEdge(left, top, right, top, 0, perimeter, reactiveStyle, hueOffset, thickness, glowBlur, opacity);
+  drawReactiveBorderEdge(right, top, right, bottom, horizontal, perimeter, reactiveStyle, hueOffset, thickness, glowBlur, opacity);
+  drawReactiveBorderEdge(right, bottom, left, bottom, horizontal + vertical, perimeter, reactiveStyle, hueOffset, thickness, glowBlur, opacity);
+  drawReactiveBorderEdge(left, bottom, left, top, horizontal * 2 + vertical, perimeter, reactiveStyle, hueOffset, thickness, glowBlur, opacity);
+}
+
+function computeWrappedDistance(fromDistance, toDistance, perimeter, direction) {
+  if (direction >= 0) {
+    return (toDistance - fromDistance + perimeter) % perimeter;
+  }
+
+  return (fromDistance - toDistance + perimeter) % perimeter;
+}
+
+function drawFlowBorderEdge(x1, y1, x2, y2, startDistance, perimeter, travelDistance, direction, thickness, glowBlur, segmentLength, colorStyle) {
+  const edgeLength = Math.hypot(x2 - x1, y2 - y1);
+  const segmentCount = Math.max(1, Math.ceil(edgeLength / segmentLength));
+  const leadDistance = ((travelDistance % perimeter) + perimeter) % perimeter;
+  const oppositeLeadDistance = (leadDistance + perimeter * 0.5) % perimeter;
+  const emphasisLength = perimeter * 0.3;
+
+  for (let index = 0; index < segmentCount; index++) {
+    const startT = index / segmentCount;
+    const endT = (index + 1) / segmentCount;
+    const sx = x1 + (x2 - x1) * startT;
+    const sy = y1 + (y2 - y1) * startT;
+    const ex = x1 + (x2 - x1) * endT;
+    const ey = y1 + (y2 - y1) * endT;
+    const segmentDistance = startDistance + edgeLength * ((startT + endT) * 0.5);
+    const normalizedDistance = segmentDistance / perimeter;
+    const wrappedDistanceA = computeWrappedDistance(leadDistance, segmentDistance, perimeter, direction);
+    const wrappedDistanceB = computeWrappedDistance(oppositeLeadDistance, segmentDistance, perimeter, direction);
+    const bandStrengthA = clamp01(1 - wrappedDistanceA / emphasisLength);
+    const bandStrengthB = clamp01(1 - wrappedDistanceB / emphasisLength);
+    const trailStrength = Math.max(bandStrengthA * bandStrengthA, bandStrengthB * bandStrengthB);
+    const signedTravel = (travelDistance / perimeter) * direction;
+    const shimmerPhase = normalizedDistance * Math.PI * 2 - signedTravel * 4.8;
+    const shimmer = Math.sin(shimmerPhase * 2.1 - 0.8) * 0.5 + 0.5;
+    const intensity = 0.22 + trailStrength * 0.62 + shimmer * 0.08;
+    const opacity = 0.2 + intensity * 0.5;
+    const color = resolveAnimatedColor(colorStyle, normalizedDistance, travelDistance * 0.62, opacity, intensity * 10);
+
+    context.beginPath();
+    context.moveTo(sx, sy);
+    context.lineTo(ex, ey);
+    context.strokeStyle = color;
+    context.lineWidth = thickness + trailStrength * 0.85;
+    context.shadowBlur = glowBlur * (0.3 + trailStrength * 0.95);
+    context.shadowColor = color;
+    context.stroke();
+  }
+}
+
+function drawFlowBorder() {
+  const flowSettings = getFlowBorderSettings();
+  const colorStyle = getFlowBorderStyle();
+  const glowMultiplier = getGlowMultiplier(flowSettings.glowStrength);
+  const inset = RAINBOW_BORDER_INSET;
+  const thickness = 2.2 + smoothedLevel * 1.1;
+  const edgeOffset = Math.max(1, thickness * 0.5) + 1;
+  const left = inset;
+  const top = inset;
+  const right = Math.max(left + 1, width - edgeOffset);
+  const bottom = Math.max(top + 1, height - edgeOffset);
+  const horizontal = right - left;
+  const vertical = bottom - top;
+  const perimeter = horizontal * 2 + vertical * 2;
+  const direction = getFlowDirectionValue();
+  const travelDistance = ((flowTravelDistance % perimeter) + perimeter) % perimeter;
+  const segmentLength = getFlowSegmentLength();
+  const glowBlur = (8 + smoothedLevel * 12) * glowMultiplier;
+
+  context.globalAlpha = 1;
+  context.lineCap = "round";
+  context.lineJoin = "round";
+
+  drawFlowBorderEdge(left, top, right, top, 0, perimeter, travelDistance, direction, thickness, glowBlur, segmentLength, colorStyle);
+  drawFlowBorderEdge(right, top, right, bottom, horizontal, perimeter, travelDistance, direction, thickness, glowBlur, segmentLength, colorStyle);
+  drawFlowBorderEdge(right, bottom, left, bottom, horizontal + vertical, perimeter, travelDistance, direction, thickness, glowBlur, segmentLength, colorStyle);
+  drawFlowBorderEdge(left, bottom, left, top, horizontal * 2 + vertical, perimeter, travelDistance, direction, thickness, glowBlur, segmentLength, colorStyle);
 }
 
 function renderFrame(now) {
