@@ -2,6 +2,20 @@
 
 High-level setup and codebase notes for contributors and developers.
 
+This guide provides a comprehensive overview for developers contributing to or extending Paraline. It covers:
+
+- **Local setup instructions** — How to install dependencies and build the project from scratch
+- **Complete architecture** — Understanding the full audio pipeline from Windows system audio to canvas visualization
+- **Codebase organization** — Detailed breakdown of each file's responsibility and how components interact
+- **Audio bridge workflow** — How the C# helper captures system audio and communicates with Electron
+- **Settings & configuration** — The nested settings model supporting multiple themes with individual controls
+- **Window behavior** — Overlay transparency, click-through, multi-monitor considerations
+- **Performance notes** — Key optimization principles for canvas rendering and IPC messaging
+- **Development workflow** — Best practices for working with Electron, IPC, and native interop
+- **Future roadmap** — Planned features and suggested areas for enhancement
+
+Use this guide when setting up a development environment, understanding how components work together, or planning new features.
+
 ---
 
 ## Stack
