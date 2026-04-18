@@ -69,7 +69,7 @@ and more about turning sound into atmosphere.
 
 <table>
 <tr>
-<td width="50%">
+<td>
 
 ### Traditional Visualizers
 - live inside a player window  
@@ -78,13 +78,13 @@ and more about turning sound into atmosphere.
 - are often too loud visually  
 
 </td>
-<td width="50%">
+<td>
 
 ### Paraline
 - lives directly on the desktop  
 - feels calm, architectural, and ambient  
 - blends into your workspace  
-- is built for continuous background use  
+- is built for cont. background use  
 
 </td>
 </tr>
