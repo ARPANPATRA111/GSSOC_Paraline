@@ -1,0 +1,165 @@
+﻿# A Developer's Guide to Paraline
+
+High-level setup and codebase notes for contributors and developers.
+
+---
+
+## Stack
+
+- **Electron** for the Windows desktop shell and transparent overlay window
+- **Node.js** for the main process, tray logic, IPC, and helper orchestration
+- **Vanilla HTML / CSS / JavaScript** for renderer-side visuals
+- **C# / .NET 8** helper process for Windows system audio capture
+- **WASAPI Loopback** for real-time audio input from the active output device
+
+---
+
+## Run Locally
+
+### Requirements
+
+- **Windows 10 / 11**
+- **Node.js 18+**
+- **.NET 8 SDK**
+
+### Install dependencies
+
+```bash
+npm install
+dotnet build .\audio-helper\Paraline.AudioBridge.csproj
+```
+
+### Start the app
+
+```bash
+npm run dev
+```
+
+You can also run:
+
+```bash
+npm start
+```
+
+---
+
+## High-Level Architecture
+
+```text
+Windows System Audio
+        ↓
+WASAPI Loopback Capture
+        ↓
+C# Helper Process
+        ↓
+JSON over stdout
+        ↓
+Electron Main Process
+        ↓
+Renderer / Canvas Visualizer
+```
+
+### Flow
+
+1. The C# helper captures Windows system audio.
+2. It emits level data as JSON through stdout.
+3. Electron reads that data through `audioBridge.js`.
+4. The main process forwards audio levels and settings to the renderer.
+5. `renderer.js` draws the active visualizer theme on a full-screen transparent canvas.
+
+---
+
+## Important Files
+
+- `main.js`
+  Electron window creation, tray menu, settings distribution, audio bridge startup.
+
+- `renderer.js`
+  All canvas-based visual logic for:
+  - Ambient Wave
+  - Reactive Border
+  - Flow Border
+
+- `preload.js`
+  Safe Electron-to-renderer bridge.
+
+- `audioBridge.js`
+  Starts and monitors the C# helper, then forwards parsed audio levels to Electron.
+
+- `settingsStore.js`
+  Local persistent settings storage with theme-specific nested settings.
+
+- `audio-helper/Program.cs`
+  Native Windows audio capture using WASAPI loopback.
+
+---
+
+## Settings Model
+
+The app uses one root selected theme plus nested settings per theme:
+
+```json
+{
+  "selectedTheme": "ambientWave",
+  "ambientWave": {
+    "tone": "blue",
+    "sensitivity": "medium",
+    "edgeMode": "bottom",
+    "glowStrength": "medium"
+  },
+  "reactiveBorder": {
+    "colorStyle": "rainbow",
+    "intensity": "medium",
+    "borderThickness": "thin",
+    "glowStrength": "medium"
+  },
+  "flowBorder": {
+    "direction": "clockwise",
+    "speedMode": "balanced",
+    "segmentLength": "medium",
+    "glowStrength": "medium",
+    "colorStyle": "rainbow"
+  }
+}
+```
+
+This allows the tray menu to show only the active theme’s controls without losing saved settings for the other themes.
+
+---
+
+## Project Structure
+
+```text
+Paraline/
+├── main.js
+├── renderer.js
+├── preload.js
+├── audioBridge.js
+├── settingsStore.js
+├── index.html
+├── styles.css
+├── package.json
+├── README.md
+├── docs/
+│   └── DEVELOPMENT.md
+└── audio-helper/
+    ├── Program.cs
+    └── Paraline.AudioBridge.csproj
+```
+
+---
+
+## Developer Notes
+
+- The overlay window is transparent, frameless, always-on-top, and click-through.
+- Full-border themes rely on the Electron window covering the full display bounds.
+- The renderer is performance-sensitive, so visual changes should stay lightweight.
+- Theme-specific tray settings are handled in the main process and pushed into the renderer as one settings payload.
+
+---
+
+## Suggested Next Areas
+
+- Multi-monitor support
+- Additional visual presets
+- Debug log cleanup once the visuals stabilize
