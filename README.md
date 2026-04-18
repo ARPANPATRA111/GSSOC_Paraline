@@ -1,161 +1,280 @@
-# Paraline
+﻿<div align="center">
 
-A Windows desktop overlay application that displays real-time audio visualization in a transparent, frameless window. Built with Electron for the frontend and .NET 8 for native Windows audio capture.
+<div align="center">
 
-## Features
+<h1 style="font-size: 64px; letter-spacing: 2px;">Paraline</h1>
 
-- ✨ Transparent, frameless, always-on-top overlay window
-- 🎵 Real-time audio level visualization using Windows WASAPI loopback capture
-- 🎨 Multiple color themes (Blue, Purple, Warm)
-- 🖱️ Mouse click-through behavior (clicks pass to underlying windows)
-- 🎯 Full-screen canvas animation at 30 FPS
-- 📊 RMS (Root Mean Square) loudness calculation
-- 🔄 Automatic fallback to simulated audio if helper not available
-- 🔒 Secure IPC communication with context isolation
+</div>
 
-## Tech Stack
+### *A desktop audio visualizer that turns your screen edges into motion.*
 
-### Frontend
-- **Electron 37.0.0** - Desktop application framework
-- **HTML5 Canvas** - Real-time graphics rendering
-- **Vanilla JavaScript** - Lightweight, no frameworks
-- **CSS3** - Styling and transparency effects
+![Platform](https://img.shields.io/badge/Platform-Windows-0f172a?style=for-the-badge)
+![Built With](https://img.shields.io/badge/Built%20With-Electron-0f172a?style=for-the-badge)
+![Audio](https://img.shields.io/badge/Audio-WASAPI%20Loopback-0f172a?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Active-0f172a?style=for-the-badge)
 
-### Backend
-- **Node.js** - Electron main process
-- **.NET 8.0 / C# 11** - Native audio capture helper
+Paraline is a Windows desktop visualizer that lives directly on your screen —  
+not inside a music player, not trapped in a window, but woven into the desktop itself.
 
-### Native Audio
-- **Windows WASAPI** - System audio capture API
-- **COM Interop** - Windows audio device access
-- **PCM Audio Formats** - Float32, PCM16, PCM24, PCM32 support
+It transforms system audio into ambient waves, reactive borders, and flowing light around your display, built to feel atmospheric, polished, and comfortable enough to leave running for hours.
 
-## Project Structure
+</div>
 
-```
-Paraline/
-├── main.js                    # Electron main process (window management, IPC)
-├── renderer.js                # Canvas visualization logic & themes
-├── preload.js                 # Secure IPC bridge (context isolation)
-├── index.html                 # Minimal HTML with canvas element
-├── styles.css                 # Transparent overlay styling
-├── audioBridge.js             # Spawns & manages C# audio helper process
-├── package.json               # Node.js dependencies & scripts
-├── Paraline.sln               # Visual Studio solution file
-└── audio-helper/              # C# audio capture helper
-    ├── Program.cs             # WASAPI loopback capture implementation
-    ├── Paraline.AudioBridge.csproj
-    ├── bin/                   # Compiled binaries
-    └── obj/                   # Build artifacts 
-```
+---
 
-## Installation
+## ✦ Preview
 
-### Prerequisites
+<div align="center">
 
-- **Windows 10/11**
-- **Node.js 18+** (for npm)
-- **.NET 8.0 SDK** (for building C# helper)
+### Ambient Wave
+![Ambient Wave Preview](./previews/ambient-wave-preview.gif)
 
-### Setup
+### Reactive Border
+![Reactive Border Preview](./previews/reactive-border-preview.gif)
 
-1. Clone or download the repository:
-   ```bash
-   git clone <repository-url>
-   cd Paraline
-   ```
+### Flow Border
+![Flow Border Preview](./previews/flow-border-preview.gif)
 
-2. Install Node.js dependencies:
-   ```bash
-   npm install
-   ```
+</div>
 
-3. Build the C# audio helper:
-   ```bash
-   dotnet build .\audio-helper\Paraline.AudioBridge.csproj
-   ```
+---
 
-## Running the App
+## ✦ Installation
 
-### Development Mode
-```bash
-npm run dev
-```
+1. Download the latest **Paraline** release
+2. Run the `.exe` installer
+3. Launch the app
+4. Open the **system tray** to control themes and settings
 
-### Production Mode
-```bash
-npm start
-```
+Once started, Paraline runs as a transparent desktop overlay and reacts in real time to the audio playing through your current output device.
 
-## Architecture
+---
 
-### Audio Pipeline
+## ✦ The Idea
 
-```
-System Audio Output
-    ↓
-Windows WASAPI (Loopback Capture)
-    ↓
-C# Helper Process (Paraline.AudioBridge.exe)
-    ↓
-JSON over stdout: {"type": "level", "value": 0.5}
-    ↓
-Node.js Child Process (audioBridge.js)
-    ↓
-IPC Message (audio-level)
-    ↓
-Renderer Process (renderer.js)
-    ↓
-Canvas Visualization
-```
+Most visualizers are designed to **grab attention**.
 
-### Key Components
+Paraline was built to do something more interesting:
 
-- **main.js** - Manages overlay window lifecycle, starts audio bridge, sends level data to renderer
-- **audioBridge.js** - Spawns C# helper, parses JSON audio data, handles errors & fallback
-- **preload.js** - Exposes secure IPC methods: `onLevel()`, `getStatus()`
-- **renderer.js** - Listens to audio levels, animates canvas visualization
-- **Program.cs** - Captures system audio, calculates RMS levels, outputs JSON @ 30 FPS
+> make the desktop feel alive without making it feel loud.
 
-## Theme Presets
+Instead of sitting in a separate player window, Paraline becomes part of the screen itself — subtle when it should be subtle, expressive when it needs to be expressive, and always shaped around the audio currently playing on your system.
 
-Configure theme via URL query parameter:
+It is less about showing sound as a spectacle,  
+and more about turning sound into atmosphere.
 
-```
-theme=blue      (default)
-theme=purple
-theme=warm
-```
+---
 
-The themes are defined in `renderer.js` with custom RGB values for:
-- Top/bottom line colors
-- Glow effects
-- Atmospheric haze
+## ✦ Why Paraline Feels Different
 
-## Build Output
+<table>
+<tr>
+<td width="50%">
 
-After building the C# project, the audio helper executable is located at:
-```
-audio-helper/bin/Debug/net8.0-windows/Paraline.AudioBridge.exe
-```
+### Traditional Visualizers
+- live inside a player window  
+- feel flashy and temporary  
+- compete with the desktop  
+- are often too loud visually  
 
-## Status & Debugging
+</td>
+<td width="50%">
 
-Query the current audio source with:
-```javascript
-const status = await window.audioBridge.getStatus();
-// Returns: {mode: "helper", reason: "C# helper process connected."}
-// or:     {mode: "simulated", reason: "...error message..."}
-```
+### Paraline
+- lives directly on the desktop  
+- feels calm, architectural, and ambient  
+- blends into your workspace  
+- is built for continuous background use  
 
-## Troubleshooting
+</td>
+</tr>
+</table>
 
-| Issue | Solution |
-|-------|----------|
-| Audio not showing | Check Task Manager for `Paraline.AudioBridge.exe` process |
-| Helper binary not found | Build C# project: `dotnet build .\audio-helper\Paraline.AudioBridge.csproj` |
-| Window appearing behind other windows | Close and reopen the app |
-| Performance issues | Reduce canvas resolution in styles.css |
+---
+
+## ✦ Core Features
+
+### 🎧 Real Audio, Not a Demo Loop
+Paraline reacts to **actual Windows system audio** using WASAPI loopback capture, so the visuals respond to whatever is really playing on your machine.
+
+### 🖥️ Desktop-Native Overlay
+The app runs as a **transparent, always-on-top, click-through overlay**, so the effect feels embedded into the screen instead of floating above your workflow.
+
+### 🎨 Multiple Visual Styles
+Paraline includes multiple themes, each built with its own visual identity and its own settings, so the experience can shift from subtle to expressive without feeling messy.
+
+### ⚙️ Tray-Based Control
+The visualizer stays lightweight and out of the way, with controls available directly from the **system tray**.
+
+### 💾 Theme-Specific Settings
+Each theme remembers its own configuration, so switching styles does not destroy your previous setup.
+
+### 🚀 Optimized for Long Sessions
+Paraline is designed to stay running in the background without feeling heavy or distracting.
+
+---
+
+## ✦ Themes
+
+## 01 — Ambient Wave
+
+A calm, elegant wave system designed to feel like motion at the edges of the desktop rather than a full visual performance.
+
+**Best for**
+- studying
+- coding
+- late-night sessions
+- minimal setups
+
+**Options**
+- **Tones:** Blue / Purple / Warm
+- **Placement:** Top / Bottom / Both
+- **Mood:** soft, subtle, atmospheric
+
+---
+
+## 02 — Reactive Border
+
+A full-border edge-lighting mode that responds directly to the energy of your music.<br>
+Instead of feeling like a moving stream, this mode feels like the perimeter of the display is **charging up with sound**.
+
+**Best for**
+- stronger visual presence
+- brighter setups
+- high-energy tracks
+
+**Options**
+- border-based reactivity
+- glow-heavy feel
+- sharper visual response
+
+---
+
+## 03 — Flow Border
+
+A directional light-runner that moves around the screen perimeter as a continuous stream.<br>
+This mode is built to feel like light is **traveling along the frame of the display**, with audio affecting the motion speed.
+
+**Best for**
+- dynamic setups
+- movement-driven visuals
+- cinematic desktop feel
+
+**Options**
+- clockwise / anticlockwise direction
+- speed tied to audio energy
+- smooth perimeter motion
+
+---
+
+## ✦ Experience
+
+Paraline is built for a very specific feeling:
+
+- the desktop should stay usable  
+- the visuals should stay elegant  
+- the sound should feel present  
+- the effect should feel like part of the OS  
+
+That balance is the whole point.
+
+You can leave it running while:
+- working
+- coding
+- studying
+- listening casually
+- sitting in a dark room with music on and nothing else open
+
+And it should still feel good.
+
+---
 
 
+## ✦ Usage
 
+## Tray Controls
+
+Paraline is designed to stay visually present but operationally invisible.
+
+From the tray, you can:
+
+- pause or resume the visualizer
+- switch between themes
+- open theme-specific settings
+- change each theme’s behavior independently
+- quit the app cleanly
+
+---
+
+## Theme-Specific Settings
+
+Each theme owns its own settings.
+
+That means you can keep:
+
+- **Ambient Wave** soft and minimal  
+- **Reactive Border** brighter and more intense  
+- **Flow Border** smoother and more directional  
+
+Switching themes does **not** wipe the others.
+
+Your setup stays remembered the way you left it.
+
+---
+
+## ✦ Built With
+
+Paraline combines desktop UI rendering with native Windows audio capture.
+
+- **Electron** — desktop shell and overlay window
+- **Node.js** — app/runtime logic
+- **Canvas-based rendering** — visual output and animation
+- **C# helper process** — Windows audio capture layer
+- **WASAPI loopback** — real-time system audio input
+
+---
+
+## ✦ Why This Project Exists
+
+Most audio visualizers fall into one of three extremes:
+
+- too flashy  
+- too gimmicky  
+- too disconnected from the desktop  
+
+Paraline started from a different question:
+
+> what if a visualizer felt less like an app, and more like a part of the screen?
+
+The goal was not just to make sound visible,  
+but to make the desktop itself feel more alive —  
+more atmospheric, more intentional, and more beautiful to sit in.
+
+---
+
+## ✦ Roadmap
+
+- multi-monitor support  
+- more theme presets  
+- smoother startup and background behavior  
+- deeper theme-specific controls  
+- better packaging and release polish  
+- more refined motion systems  
+
+---
+
+## ✦ Developer Notes
+
+If you want to explore the implementation details, local setup, or development workflow:
+
+**[Open Developer Notes](./docs/DEVELOPMENT.md)**
+
+---
+
+<div align="center">
+
+### Paraline is not a media player visualizer.
+
+It is a layer of motion for the desktop itself.
+
+</div>
