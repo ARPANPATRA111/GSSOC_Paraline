@@ -285,7 +285,8 @@ function buildReactiveBorderMenuItems() {
       label: "Border Thickness",
       submenu: [
         { label: "Thin", value: "thin" },
-        { label: "Medium", value: "medium" }
+        { label: "Medium", value: "medium" },
+        { label: "Thick", value: "thick" }
       ].map((option) => ({
         label: option.label,
         type: "radio",
