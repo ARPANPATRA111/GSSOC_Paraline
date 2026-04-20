@@ -55,6 +55,18 @@ You can also run:
 npm start
 ```
 
+### Build a Windows installer
+
+```bash
+npm run dist:win
+```
+
+This will:
+
+1. Publish the C# audio helper for `win-x64`
+2. Bundle it into the Electron app resources
+3. Generate an NSIS installer in the `dist/` folder
+
 ---
 
 ## High-Level Architecture
