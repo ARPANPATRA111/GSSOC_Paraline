@@ -148,16 +148,39 @@ function resizeOverlayToPrimaryDisplay() {
 }
 
 function createTrayIcon() {
-  const svg = `
+  const iconCandidates = [
+    path.join(process.resourcesPath, "assets", "appicon.png"),
+    path.join(process.resourcesPath, "assets", "paraline.png"),
+    path.join(__dirname, "assets", "appicon.png"),
+    path.join(__dirname, "assets", "paraline.png")
+  ];
+
+  const iconPath = iconCandidates.find((candidatePath) => {
+    try {
+      return require("fs").existsSync(candidatePath);
+    } catch {
+      return false;
+    }
+  });
+
+  if (iconPath) {
+    const image = nativeImage.createFromPath(iconPath);
+
+    if (!image.isEmpty()) {
+      return image.resize({ width: 16, height: 16 });
+    }
+  }
+
+  const fallbackSvg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
       <rect width="64" height="64" rx="14" fill="#0e1a24"/>
       <path d="M12 40C18 40 18 24 24 24C30 24 30 48 36 48C42 48 42 18 52 18" fill="none" stroke="#8ee2ff" stroke-width="5" stroke-linecap="round"/>
-      <path d="M12 46C18 46 18 34 24 34C30 34 30 54 36 54C42 54 42 28 52 28" fill="none" stroke="#ffd2eb" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+      <path d="M12 46C18 46 18 34 24 34C30 24 30 54 36 54C42 54 42 28 52 28" fill="none" stroke="#ffd2eb" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
     </svg>
   `;
 
   return nativeImage
-    .createFromDataURL(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`)
+    .createFromDataURL(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(fallbackSvg)}`)
     .resize({ width: 16, height: 16 });
 }
 
