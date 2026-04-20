@@ -101,10 +101,19 @@ Renderer / Canvas Visualizer
   Electron window creation, tray menu, settings distribution, audio bridge startup.
 
 - `renderer.js`
-  All canvas-based visual logic for:
-  - Ambient Wave
-  - Reactive Border
-  - Flow Border
+  Renderer orchestration, animation loop, state updates, and theme dispatch.
+
+- `themes/shared.js`
+  Shared canvas drawing helpers and reusable visual utility functions.
+
+- `themes/ambientWave.js`
+  Ambient Wave rendering and Ambient-specific sensitivity/tone logic.
+
+- `themes/reactiveBorder.js`
+  Reactive Border rendering and Reactive-specific intensity logic.
+
+- `themes/flowBorder.js`
+  Flow Border rendering and Flow-specific direction/speed logic.
 
 - `preload.js`
   Safe Electron-to-renderer bridge.
@@ -164,6 +173,11 @@ Paraline/
 ├── settingsStore.js
 ├── index.html
 ├── styles.css
+├── themes/
+│   ├── shared.js
+│   ├── ambientWave.js
+│   ├── reactiveBorder.js
+│   └── flowBorder.js
 ├── package.json
 ├── README.md
 ├── docs/
