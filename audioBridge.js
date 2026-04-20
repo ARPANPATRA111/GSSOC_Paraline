@@ -1,5 +1,6 @@
 const { app } = require("electron");
 const { spawn } = require("child_process");
+const fs = require("fs");
 const path = require("path");
 
 function createAudioBridge(sendLevel) {
@@ -10,25 +11,25 @@ function createAudioBridge(sendLevel) {
   };
 
   function findHelperBinary() {
-    const helperPath = path.join(
-      app.getAppPath(),
-      "audio-helper",
-      "bin",
-      "Debug",
-      "net8.0-windows",
-      "Paraline.AudioBridge.exe"
-    );
+    const appPath = app.getAppPath();
+    const candidates = [
+      path.join(process.resourcesPath, "audio-helper", "Paraline.AudioBridge.exe"),
+      path.join(appPath, "build", "audio-helper", "Paraline.AudioBridge.exe"),
+      path.join(appPath, "audio-helper", "bin", "Release", "net8.0-windows", "win-x64", "publish", "Paraline.AudioBridge.exe"),
+      path.join(appPath, "audio-helper", "bin", "Debug", "net8.0-windows", "Paraline.AudioBridge.exe"),
+      path.join(appPath, "audio-helper", "bin", "Release", "net8.0-windows", "Paraline.AudioBridge.exe")
+    ];
 
-    return helperPath;
+    return candidates.find((candidatePath) => fs.existsSync(candidatePath)) || null;
   }
 
   function start() {
     const helperBinary = findHelperBinary();
 
-    if (!require("fs").existsSync(helperBinary)) {
+    if (!helperBinary) {
       helperStatus = {
         mode: "simulated",
-        reason: "C# helper binary not found. Build it before enabling loopback capture."
+        reason: "C# helper binary not found. Build or package the helper before enabling loopback capture."
       };
       return;
     }
