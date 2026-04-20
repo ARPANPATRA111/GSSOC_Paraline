@@ -417,9 +417,11 @@ app.whenReady().then(() => {
   });
 
   createOverlayWindow();
-  console.log("[debug] overlay window created");
   createTray();
   sendVisualizerSettings();
+
+  // Start the simulated fallback first so any real helper level can immediately disable it.
+  startSimulatedAudioFallback();
 
   audioBridge = createAudioBridge((value) => {
     stopSimulatedAudioFallback();
