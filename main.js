@@ -14,7 +14,8 @@ let visualizerSettings;
 const THEME_LABELS = {
   ambientWave: "Ambient Wave",
   reactiveBorder: "Reactive Border",
-  flowBorder: "Flow Border"
+  flowBorder: "Flow Border",
+  sideBars: "Side Bars"
 };
 
 function createOverlayWindow() {
@@ -188,7 +189,8 @@ function buildMainThemeMenuItems() {
   const themeOptions = [
     { value: "ambientWave", label: "Ambient Wave" },
     { value: "reactiveBorder", label: "Reactive Border" },
-    { value: "flowBorder", label: "Flow Border" }
+    { value: "flowBorder", label: "Flow Border" },
+    { value: "sideBars", label: "Side Bars" }
   ];
 
   return themeOptions.map((themeOption) => ({
@@ -377,6 +379,66 @@ function buildFlowBorderMenuItems() {
   ];
 }
 
+function buildSideBarsMenuItems() {
+  const sideBarsSettings = visualizerSettings.sideBars;
+
+  return [
+    {
+      label: "Side Bars Settings",
+      enabled: false
+    },
+    {
+      label: "Color Style",
+      submenu: [
+        { label: "White", value: "white" },
+        { label: "Yellow", value: "yellow" },
+        { label: "Aqua", value: "aqua" },
+        { label: "Multicolor", value: "multicolor" }
+      ].map((option) => ({
+        label: option.label,
+        type: "radio",
+        checked: sideBarsSettings.colorStyle === option.value,
+        click: () => updateSettings({ sideBars: { colorStyle: option.value } })
+      }))
+    },
+    {
+      label: "Bar Thickness",
+      submenu: [
+        { label: "Thin", value: "thin" },
+        { label: "Medium", value: "medium" },
+        { label: "Thick", value: "thick" }
+      ].map((option) => ({
+        label: option.label,
+        type: "radio",
+        checked: sideBarsSettings.barThickness === option.value,
+        click: () => updateSettings({ sideBars: { barThickness: option.value } })
+      }))
+    },
+    {
+      label: "Sensitivity",
+      submenu: ["low", "medium", "high"].map((level) => ({
+        label: level[0].toUpperCase() + level.slice(1),
+        type: "radio",
+        checked: sideBarsSettings.sensitivity === level,
+        click: () => updateSettings({ sideBars: { sensitivity: level } })
+      }))
+    },
+    {
+      label: "Bar Count",
+      submenu: [
+        { label: "Less", value: "low" },
+        { label: "Medium", value: "medium" },
+        { label: "More", value: "high" }
+      ].map((option) => ({
+        label: option.label,
+        type: "radio",
+        checked: sideBarsSettings.barDensity === option.value,
+        click: () => updateSettings({ sideBars: { barDensity: option.value } })
+      }))
+    }
+  ];
+}
+
 function buildActiveThemeMenuItems() {
   if (visualizerSettings.selectedTheme === "reactiveBorder") {
     return buildReactiveBorderMenuItems();
@@ -384,6 +446,10 @@ function buildActiveThemeMenuItems() {
 
   if (visualizerSettings.selectedTheme === "flowBorder") {
     return buildFlowBorderMenuItems();
+  }
+
+  if (visualizerSettings.selectedTheme === "sideBars") {
+    return buildSideBarsMenuItems();
   }
 
   return buildAmbientWaveMenuItems();
