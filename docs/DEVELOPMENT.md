@@ -118,6 +118,9 @@ Renderer / Canvas Visualizer
 - `themes/sideBars.js`
   Side Bars rendering and Side Bars-specific color styling.
 
+- `themes/pulseLines.js`
+  Pulse Lines rendering and Pulse Lines-specific mode, intensity, and color logic.
+
 - `preload.js`
   Safe Electron-to-renderer bridge.
 
@@ -157,6 +160,18 @@ The app uses one root selected theme plus nested settings per theme:
     "segmentLength": "medium",
     "glowStrength": "medium",
     "colorStyle": "rainbow"
+  },
+  "sideBars": {
+    "colorStyle": "multicolor",
+    "barThickness": "thick",
+    "sensitivity": "medium",
+    "barDensity": "medium"
+  },
+  "flatRipples": {
+    "mode": "sideRipples",
+    "intensity": "medium",
+    "sensitivity": "medium",
+    "colorStyle": "blue"
   }
 }
 ```
@@ -181,7 +196,8 @@ Paraline/
 │   ├── ambientWave.js
 │   ├── reactiveBorder.js
 │   ├── flowBorder.js
-│   └── sideBars.js
+│   ├── sideBars.js
+│   └── pulseLines.js
 ├── package.json
 ├── README.md
 ├── docs/
