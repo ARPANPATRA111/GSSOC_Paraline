@@ -27,10 +27,16 @@ const DEFAULT_SETTINGS = Object.freeze({
     barThickness: "thick",
     sensitivity: "medium",
     barDensity: "medium"
+  }),
+  flatRipples: Object.freeze({
+    mode: "sideRipples",
+    intensity: "medium",
+    colorStyle: "blue",
+    speed: "calm"
   })
 });
 
-const VALID_MAIN_THEMES = new Set(["ambientWave", "reactiveBorder", "flowBorder", "sideBars"]);
+const VALID_MAIN_THEMES = new Set(["ambientWave", "reactiveBorder", "flowBorder", "sideBars", "flatRipples"]);
 const VALID_AMBIENT_TONES = new Set(["blue", "purple", "warm"]);
 const VALID_LEVELS = new Set(["low", "medium", "high"]);
 const VALID_EDGE_MODES = new Set(["top", "bottom", "both"]);
@@ -44,6 +50,9 @@ const VALID_FLOW_COLOR_STYLES = new Set(["rainbow", "cool", "warm"]);
 const VALID_SIDE_BARS_COLOR_STYLES = new Set(["white", "yellow", "aqua", "multicolor"]);
 const VALID_SIDE_BARS_THICKNESS = new Set(["thin", "medium", "thick"]);
 const VALID_SIDE_BARS_DENSITY = new Set(["low", "medium", "high"]);
+const VALID_FLAT_RIPPLES_MODES = new Set(["sideRipples", "flatRipples"]);
+const VALID_FLAT_RIPPLES_COLORS = new Set(["red", "blue", "white", "multicolor"]);
+const VALID_FLAT_RIPPLES_SPEEDS = new Set(["calm", "balanced", "energetic"]);
 
 function createDefaultSettings() {
   return {
@@ -51,7 +60,8 @@ function createDefaultSettings() {
     ambientWave: { ...DEFAULT_SETTINGS.ambientWave },
     reactiveBorder: { ...DEFAULT_SETTINGS.reactiveBorder },
     flowBorder: { ...DEFAULT_SETTINGS.flowBorder },
-    sideBars: { ...DEFAULT_SETTINGS.sideBars }
+    sideBars: { ...DEFAULT_SETTINGS.sideBars },
+    flatRipples: { ...DEFAULT_SETTINGS.flatRipples }
   };
 }
 
@@ -112,6 +122,15 @@ function sanitizeSideBars(input = {}) {
   };
 }
 
+function sanitizeFlatRipples(input = {}) {
+  return {
+    mode: pick(input.mode, VALID_FLAT_RIPPLES_MODES, DEFAULT_SETTINGS.flatRipples.mode),
+    intensity: pick(input.intensity, VALID_LEVELS, DEFAULT_SETTINGS.flatRipples.intensity),
+    colorStyle: pick(input.colorStyle, VALID_FLAT_RIPPLES_COLORS, DEFAULT_SETTINGS.flatRipples.colorStyle),
+    speed: pick(input.speed, VALID_FLAT_RIPPLES_SPEEDS, DEFAULT_SETTINGS.flatRipples.speed)
+  };
+}
+
 function migrateLegacySettings(input = {}) {
   if (VALID_MAIN_THEMES.has(input.selectedTheme)) {
     return input;
@@ -154,7 +173,8 @@ function sanitizeSettings(input = {}) {
     ambientWave: sanitizeAmbientWave(source.ambientWave),
     reactiveBorder: sanitizeReactiveBorder(source.reactiveBorder),
     flowBorder: sanitizeFlowBorder(source.flowBorder),
-    sideBars: sanitizeSideBars(source.sideBars)
+    sideBars: sanitizeSideBars(source.sideBars),
+    flatRipples: sanitizeFlatRipples(source.flatRipples)
   };
 }
 
