@@ -21,10 +21,16 @@ const DEFAULT_SETTINGS = Object.freeze({
     segmentLength: "medium",
     glowStrength: "medium",
     colorStyle: "rainbow"
+  }),
+  sideBars: Object.freeze({
+    colorStyle: "multicolor",
+    barThickness: "thick",
+    sensitivity: "medium",
+    barDensity: "medium"
   })
 });
 
-const VALID_MAIN_THEMES = new Set(["ambientWave", "reactiveBorder", "flowBorder"]);
+const VALID_MAIN_THEMES = new Set(["ambientWave", "reactiveBorder", "flowBorder", "sideBars"]);
 const VALID_AMBIENT_TONES = new Set(["blue", "purple", "warm"]);
 const VALID_LEVELS = new Set(["low", "medium", "high"]);
 const VALID_EDGE_MODES = new Set(["top", "bottom", "both"]);
@@ -35,13 +41,17 @@ const VALID_FLOW_DIRECTIONS = new Set(["clockwise", "anticlockwise"]);
 const VALID_FLOW_SPEEDS = new Set(["calm", "balanced", "energetic"]);
 const VALID_FLOW_SEGMENTS = new Set(["short", "medium", "long"]);
 const VALID_FLOW_COLOR_STYLES = new Set(["rainbow", "cool", "warm"]);
+const VALID_SIDE_BARS_COLOR_STYLES = new Set(["white", "yellow", "aqua", "multicolor"]);
+const VALID_SIDE_BARS_THICKNESS = new Set(["thin", "medium", "thick"]);
+const VALID_SIDE_BARS_DENSITY = new Set(["low", "medium", "high"]);
 
 function createDefaultSettings() {
   return {
     selectedTheme: DEFAULT_SETTINGS.selectedTheme,
     ambientWave: { ...DEFAULT_SETTINGS.ambientWave },
     reactiveBorder: { ...DEFAULT_SETTINGS.reactiveBorder },
-    flowBorder: { ...DEFAULT_SETTINGS.flowBorder }
+    flowBorder: { ...DEFAULT_SETTINGS.flowBorder },
+    sideBars: { ...DEFAULT_SETTINGS.sideBars }
   };
 }
 
@@ -93,6 +103,15 @@ function sanitizeFlowBorder(input = {}) {
   };
 }
 
+function sanitizeSideBars(input = {}) {
+  return {
+    colorStyle: pick(input.colorStyle, VALID_SIDE_BARS_COLOR_STYLES, DEFAULT_SETTINGS.sideBars.colorStyle),
+    barThickness: pick(input.barThickness, VALID_SIDE_BARS_THICKNESS, DEFAULT_SETTINGS.sideBars.barThickness),
+    sensitivity: pick(input.sensitivity, VALID_LEVELS, DEFAULT_SETTINGS.sideBars.sensitivity),
+    barDensity: pick(input.barDensity, VALID_SIDE_BARS_DENSITY, DEFAULT_SETTINGS.sideBars.barDensity)
+  };
+}
+
 function migrateLegacySettings(input = {}) {
   if (VALID_MAIN_THEMES.has(input.selectedTheme)) {
     return input;
@@ -134,7 +153,8 @@ function sanitizeSettings(input = {}) {
     selectedTheme: pick(source.selectedTheme, VALID_MAIN_THEMES, DEFAULT_SETTINGS.selectedTheme),
     ambientWave: sanitizeAmbientWave(source.ambientWave),
     reactiveBorder: sanitizeReactiveBorder(source.reactiveBorder),
-    flowBorder: sanitizeFlowBorder(source.flowBorder)
+    flowBorder: sanitizeFlowBorder(source.flowBorder),
+    sideBars: sanitizeSideBars(source.sideBars)
   };
 }
 
