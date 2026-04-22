@@ -115,6 +115,9 @@ Renderer / Canvas Visualizer
 - `themes/flowBorder.js`
   Flow Border rendering and Flow-specific direction/speed logic.
 
+- `themes/sideBars.js`
+  Side Bars rendering and Side Bars-specific color styling.
+
 - `preload.js`
   Safe Electron-to-renderer bridge.
 
@@ -177,7 +180,8 @@ Paraline/
 │   ├── shared.js
 │   ├── ambientWave.js
 │   ├── reactiveBorder.js
-│   └── flowBorder.js
+│   ├── flowBorder.js
+│   └── sideBars.js
 ├── package.json
 ├── README.md
 ├── docs/
