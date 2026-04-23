@@ -121,6 +121,12 @@ Renderer / Canvas Visualizer
 - `themes/pulseLines.js`
   Pulse Lines rendering and Pulse Lines-specific mode, intensity, and color logic.
 
+- `themes/dotParticles.js`
+  Dot Particles rendering and Dot-specific density, motion, direction, and glow logic.
+
+- `themes/rippleFlow.js`
+  Ripple Flow rendering with center-origin wavefront propagation along screen edges.
+
 - `preload.js`
   Safe Electron-to-renderer bridge.
 
@@ -170,6 +176,18 @@ The app uses one root selected theme plus nested settings per theme:
   "flatRipples": {
     "mode": "sideRipples",
     "intensity": "medium",
+    "colorStyle": "blue",
+    "speed": "calm"
+  },
+  "dotParticles": {
+    "density": "medium",
+    "motionStyle": "balanced",
+    "directionBehavior": "beatReactive",
+    "glowStrength": "medium"
+  },
+  "rippleFlow": {
+    "mode": "sideRipples",
+    "intensity": "medium",
     "sensitivity": "medium",
     "colorStyle": "blue"
   }
@@ -197,7 +215,9 @@ Paraline/
 │   ├── reactiveBorder.js
 │   ├── flowBorder.js
 │   ├── sideBars.js
-│   └── pulseLines.js
+│   ├── pulseLines.js
+│   ├── dotParticles.js
+│   └── rippleFlow.js
 ├── package.json
 ├── README.md
 ├── docs/
