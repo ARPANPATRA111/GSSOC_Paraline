@@ -28,6 +28,15 @@
     }
   };
 
+  const AUDIO_SMOOTHING = 0.065;
+  const SPEED_SMOOTHING = 0.08;
+  const MAX_AUDIO_LEVEL = 0.82;
+
+  let localAudioLevel = 0.24;
+  let localSpeed = 0;
+  let travelDistance = 0;
+  let lastMotionTime = 0;
+
   function getFlatRipplesAudioMultiplier(settings = {}) {
     if (settings.speed === "energetic") {
       return 3.5;
@@ -38,6 +47,10 @@
     }
 
     return 2.3;
+  }
+
+  function easeAudioLevel(value) {
+    return Math.sqrt(clamp01(value / MAX_AUDIO_LEVEL));
   }
 
   function getRippleProfile(settings = {}) {
@@ -123,12 +136,31 @@
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
 
-  function getWrappedFrontDistance(time, speed, maxDistance) {
+  function getWrappedFrontDistance(distance, maxDistance) {
     if (maxDistance <= 0) {
       return 0;
     }
 
-    return (time * speed) % maxDistance;
+    return distance % maxDistance;
+  }
+
+  function updateMotionState(time, rawLevel, profile) {
+    const delta = lastMotionTime
+      ? Math.min(0.05, Math.max(0.001, time - lastMotionTime))
+      : 1 / 48;
+    const easedLevel = easeAudioLevel(rawLevel);
+    const targetSpeed = profile.baseSpeed * profile.speedScale + easedLevel * profile.audioSpeedBoost;
+
+    localAudioLevel += (easedLevel - localAudioLevel) * AUDIO_SMOOTHING;
+    localSpeed += (targetSpeed - localSpeed) * SPEED_SMOOTHING;
+    travelDistance += delta * localSpeed;
+    lastMotionTime = time;
+
+    return {
+      delta,
+      level: localAudioLevel,
+      distance: travelDistance
+    };
   }
 
   function getFrontEnvelope(distance, frontDistance, frontWidth) {
@@ -139,7 +171,7 @@
   function drawVerticalRippleLine(context, xBase, height, time, smoothedLevel, profile, color, flip = 1) {
     const centerY = height * 0.5;
     const maxDistance = centerY + profile.frontWidth * 1.2;
-    const frontDistance = getWrappedFrontDistance(time, profile.baseSpeed * profile.speedScale + smoothedLevel * profile.audioSpeedBoost, maxDistance);
+    const frontDistance = getWrappedFrontDistance(profile.travelDistance, maxDistance);
     const step = 8;
     const waveAmplitude = profile.amplitude * (0.45 + smoothedLevel * 0.95);
     const breakStrength = 0.03;
@@ -174,7 +206,7 @@
   function drawHorizontalRippleLine(context, width, yBase, time, smoothedLevel, profile, color) {
     const centerX = width * 0.5;
     const maxDistance = centerX + profile.frontWidth * 1.2;
-    const frontDistance = getWrappedFrontDistance(time, profile.baseSpeed * profile.speedScale + smoothedLevel * profile.audioSpeedBoost, maxDistance);
+    const frontDistance = getWrappedFrontDistance(profile.travelDistance, maxDistance);
     const step = 10;
     const waveAmplitude = profile.amplitude * (0.45 + smoothedLevel * 1.05);
     const breakStrength = 0.028;
@@ -219,14 +251,16 @@
     const speedProfile = getSpeedProfile(settings);
     profile.speedScale = speedProfile.base;
     profile.audioSpeedBoost = speedProfile.audioBoost;
+    const motion = updateMotionState(time, smoothedLevel, profile);
+    profile.travelDistance = motion.distance;
     const leftBase = 4;
     const rightBase = width - 4;
     const isMulticolor = settings.colorStyle === "multicolor";
     const primaryColor = resolveRippleColor(settings, 0.12, Math.min(1, profile.alpha * (isMulticolor ? 1.16 : 1.06)));
     const echoColor = resolveRippleColor(settings, 0.78, profile.alpha * (isMulticolor ? 0.78 : 0.64));
 
-    drawVerticalRippleLine(context, leftBase, height, time, smoothedLevel, profile, primaryColor, 1);
-    drawVerticalRippleLine(context, rightBase, height, time, smoothedLevel, profile, primaryColor, -1);
+    drawVerticalRippleLine(context, leftBase, height, time, motion.level, profile, primaryColor, 1);
+    drawVerticalRippleLine(context, rightBase, height, time, motion.level, profile, primaryColor, -1);
 
     const echoProfile = {
       ...profile,
@@ -237,11 +271,12 @@
       baseSpeed: profile.baseSpeed * 0.94,
       speedScale: profile.speedScale,
       audioSpeedBoost: profile.audioSpeedBoost * 0.92,
+      travelDistance: profile.travelDistance + profile.trailGap * 0.7,
       trailGap: profile.trailGap * 1.12
     };
 
-    drawVerticalRippleLine(context, leftBase, height, time + 0.14, smoothedLevel, echoProfile, echoColor, 1);
-    drawVerticalRippleLine(context, rightBase, height, time + 0.14, smoothedLevel, echoProfile, echoColor, -1);
+    drawVerticalRippleLine(context, leftBase, height, time + 0.14, motion.level, echoProfile, echoColor, 1);
+    drawVerticalRippleLine(context, rightBase, height, time + 0.14, motion.level, echoProfile, echoColor, -1);
   }
 
   function drawBottomRipples(options) {
@@ -257,12 +292,14 @@
     const speedProfile = getSpeedProfile(settings);
     profile.speedScale = speedProfile.base;
     profile.audioSpeedBoost = speedProfile.audioBoost;
+    const motion = updateMotionState(time, smoothedLevel, profile);
+    profile.travelDistance = motion.distance;
     const yBase = height - 3;
     const isMulticolor = settings.colorStyle === "multicolor";
     const primaryColor = resolveRippleColor(settings, 0.22, Math.min(1, profile.alpha * (isMulticolor ? 1.16 : 1.06)));
     const echoColor = resolveRippleColor(settings, 0.82, profile.alpha * (isMulticolor ? 0.78 : 0.64));
 
-    drawHorizontalRippleLine(context, width, yBase, time, smoothedLevel, profile, primaryColor);
+    drawHorizontalRippleLine(context, width, yBase, time, motion.level, profile, primaryColor);
 
     const echoProfile = {
       ...profile,
@@ -273,10 +310,11 @@
       baseSpeed: profile.baseSpeed * 0.95,
       speedScale: profile.speedScale,
       audioSpeedBoost: profile.audioSpeedBoost * 0.92,
+      travelDistance: profile.travelDistance + profile.trailGap * 0.68,
       trailGap: profile.trailGap * 1.1
     };
 
-    drawHorizontalRippleLine(context, width, yBase, time + 0.14, smoothedLevel, echoProfile, echoColor);
+    drawHorizontalRippleLine(context, width, yBase, time + 0.14, motion.level, echoProfile, echoColor);
   }
 
   function drawFlatRipples(options) {
