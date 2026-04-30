@@ -44,6 +44,11 @@ const {
   drawRippleFlow
 } = window.ParalineRippleFlow;
 
+const {
+  getSnowBubbleAudioMultiplier,
+  drawSnowBubbleParticles
+} = window.ParalineSnowBubbleParticles;
+
 const TARGET_FPS = 36;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const FLOW_TARGET_FPS = 60;
@@ -114,6 +119,13 @@ let visualizerState = {
     sensitivity: "medium",
     colorStyle: "blue"
   },
+  snowBubbleParticles: {
+    fallArea: "middle",
+    density: "medium",
+    motionStyle: "balanced",
+    glowStrength: "medium",
+    particleSize: "medium"
+  },
   paused: false
 };
 
@@ -148,6 +160,10 @@ function getRippleFlowSettings() {
   return visualizerState.rippleFlow || {};
 }
 
+function getSnowBubbleParticlesSettings() {
+  return visualizerState.snowBubbleParticles || {};
+}
+
 function getActiveAudioMultiplier() {
   if (visualizerState.selectedTheme === "reactiveBorder") {
     return getReactiveInputMultiplier(getReactiveBorderSettings());
@@ -171,6 +187,10 @@ function getActiveAudioMultiplier() {
 
   if (visualizerState.selectedTheme === "rippleFlow") {
     return getRippleFlowAudioMultiplier(getRippleFlowSettings());
+  }
+
+  if (visualizerState.selectedTheme === "snowBubbleParticles") {
+    return getSnowBubbleAudioMultiplier(getSnowBubbleParticlesSettings());
   }
 
   return getAmbientSensitivityMultiplier(getAmbientWaveSettings());
@@ -282,6 +302,8 @@ function renderFrame(now) {
     activeFrameInterval = PARTICLE_FRAME_INTERVAL;
   } else if (visualizerState.selectedTheme === "rippleFlow") {
     activeFrameInterval = RIPPLE_FLOW_FRAME_INTERVAL;
+  } else if (visualizerState.selectedTheme === "snowBubbleParticles") {
+    activeFrameInterval = PARTICLE_FRAME_INTERVAL;
   }
 
   if (lastFrameAt && now - lastFrameAt < activeFrameInterval) {
@@ -357,6 +379,15 @@ function renderFrame(now) {
       smoothedLevel,
       settings: getRippleFlowSettings()
     });
+  } else if (visualizerState.selectedTheme === "snowBubbleParticles") {
+    drawSnowBubbleParticles({
+      context,
+      width,
+      height,
+      time,
+      smoothedLevel,
+      settings: getSnowBubbleParticlesSettings()
+    });
   } else {
     drawAmbientWave({
       context,
@@ -406,10 +437,14 @@ function applySettings(nextSettings) {
     rippleFlow: {
       ...visualizerState.rippleFlow,
       ...(nextSettings?.rippleFlow || {})
+    },
+    snowBubbleParticles: {
+      ...visualizerState.snowBubbleParticles,
+      ...(nextSettings?.snowBubbleParticles || {})
     }
   };
 
-  if (!["ambientWave", "reactiveBorder", "flowBorder", "sideBars", "flatRipples", "dotParticles", "rippleFlow"].includes(visualizerState.selectedTheme)) {
+  if (!["ambientWave", "reactiveBorder", "flowBorder", "sideBars", "flatRipples", "dotParticles", "rippleFlow", "snowBubbleParticles"].includes(visualizerState.selectedTheme)) {
     visualizerState.selectedTheme = "ambientWave";
   }
 
@@ -527,6 +562,26 @@ function applySettings(nextSettings) {
 
   if (!["red", "blue", "white"].includes(visualizerState.rippleFlow.colorStyle)) {
     visualizerState.rippleFlow.colorStyle = "blue";
+  }
+
+  if (!["middle", "fullWidth"].includes(visualizerState.snowBubbleParticles.fallArea)) {
+    visualizerState.snowBubbleParticles.fallArea = "middle";
+  }
+
+  if (!["low", "medium", "high"].includes(visualizerState.snowBubbleParticles.density)) {
+    visualizerState.snowBubbleParticles.density = "medium";
+  }
+
+  if (!["calm", "balanced", "energetic"].includes(visualizerState.snowBubbleParticles.motionStyle)) {
+    visualizerState.snowBubbleParticles.motionStyle = "balanced";
+  }
+
+  if (!["soft", "medium", "strong"].includes(visualizerState.snowBubbleParticles.glowStrength)) {
+    visualizerState.snowBubbleParticles.glowStrength = "medium";
+  }
+
+  if (!["small", "medium", "large"].includes(visualizerState.snowBubbleParticles.particleSize)) {
+    visualizerState.snowBubbleParticles.particleSize = "medium";
   }
 
   rebuildCachedPaint();
