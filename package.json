@@ -39,6 +39,7 @@
       "settingsStore.js",
       "index.html",
       "styles.css",
+      "themes/**/*",
       "package.json",
       "assets/**/*"
     ],
