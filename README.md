@@ -62,13 +62,21 @@ It transforms system audio into ambient waves, reactive borders, and flowing lig
 </td>
 </tr>
 <tr>
-<td></td>
 <td align="center" width="33%">
 <strong>Ripple Flow</strong><br/>
 <img src="./previews/ripple-flow-preview.svg" alt="Ripple Flow Preview" width="260"/>
 
 </td>
-<td></td>
+<td align="center" width="33%">
+<strong>Snow Particles</strong><br/>
+<img src="./previews/snow-particles-preview.svg" alt="Snow Particles Preview" width="260"/>
+
+</td>
+<td align="center" width="33%">
+<strong>Edge Crystals</strong><br/>
+<img src="./previews/edge-crystals-preview.svg" alt="Edge Crystals Preview" width="260"/>
+
+</td>
 </tr>
 </table>
 
