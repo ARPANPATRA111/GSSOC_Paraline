@@ -18,7 +18,8 @@ const THEME_LABELS = {
   sideBars: "Side Bars",
   flatRipples: "Pulse Lines",
   dotParticles: "Dot Particles",
-  rippleFlow: "Ripple Flow"
+  rippleFlow: "Ripple Flow",
+  snowBubbleParticles: "Snow Particles"
 };
 
 function createOverlayWindow() {
@@ -204,7 +205,8 @@ function buildMainThemeMenuItems() {
     { value: "sideBars", label: "Side Bars" },
     { value: "flatRipples", label: "Pulse Lines" },
     { value: "dotParticles", label: "Dot Particles" },
-    { value: "rippleFlow", label: "Ripple Flow" }
+    { value: "rippleFlow", label: "Ripple Flow" },
+    { value: "snowBubbleParticles", label: "Snow Particles" }
   ];
 
   return themeOptions.map((themeOption) => ({
@@ -621,6 +623,73 @@ function buildRippleFlowMenuItems() {
   ];
 }
 
+function buildSnowBubbleParticlesMenuItems() {
+  const particleSettings = visualizerSettings.snowBubbleParticles;
+
+  return [
+    {
+      label: "Snow Particles Settings",
+      enabled: false
+    },
+    {
+      label: "Snowfall Area",
+      submenu: [
+        { label: "Middle Section", value: "middle" },
+        { label: "Entire Top Border", value: "fullWidth" }
+      ].map((option) => ({
+        label: option.label,
+        type: "radio",
+        checked: particleSettings.fallArea === option.value,
+        click: () => updateSettings({ snowBubbleParticles: { fallArea: option.value } })
+      }))
+    },
+    {
+      label: "Density",
+      submenu: ["low", "medium", "high"].map((level) => ({
+        label: level[0].toUpperCase() + level.slice(1),
+        type: "radio",
+        checked: particleSettings.density === level,
+        click: () => updateSettings({ snowBubbleParticles: { density: level } })
+      }))
+    },
+    {
+      label: "Motion Style",
+      submenu: [
+        { label: "Calm", value: "calm" },
+        { label: "Balanced", value: "balanced" },
+        { label: "Energetic", value: "energetic" }
+      ].map((option) => ({
+        label: option.label,
+        type: "radio",
+        checked: particleSettings.motionStyle === option.value,
+        click: () => updateSettings({ snowBubbleParticles: { motionStyle: option.value } })
+      }))
+    },
+    {
+      label: "Glow Strength",
+      submenu: ["soft", "medium", "strong"].map((strength) => ({
+        label: strength[0].toUpperCase() + strength.slice(1),
+        type: "radio",
+        checked: particleSettings.glowStrength === strength,
+        click: () => updateSettings({ snowBubbleParticles: { glowStrength: strength } })
+      }))
+    },
+    {
+      label: "Particle Size",
+      submenu: [
+        { label: "Small", value: "small" },
+        { label: "Medium", value: "medium" },
+        { label: "Large", value: "large" }
+      ].map((option) => ({
+        label: option.label,
+        type: "radio",
+        checked: particleSettings.particleSize === option.value,
+        click: () => updateSettings({ snowBubbleParticles: { particleSize: option.value } })
+      }))
+    }
+  ];
+}
+
 function buildActiveThemeMenuItems() {
   if (visualizerSettings.selectedTheme === "reactiveBorder") {
     return buildReactiveBorderMenuItems();
@@ -644,6 +713,10 @@ function buildActiveThemeMenuItems() {
 
   if (visualizerSettings.selectedTheme === "rippleFlow") {
     return buildRippleFlowMenuItems();
+  }
+
+  if (visualizerSettings.selectedTheme === "snowBubbleParticles") {
+    return buildSnowBubbleParticlesMenuItems();
   }
 
   return buildAmbientWaveMenuItems();
