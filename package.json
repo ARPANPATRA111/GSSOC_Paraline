@@ -6,6 +6,8 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
+    "landing:dev": "npm --prefix landing run dev",
+    "landing:build": "npm --prefix landing run build",
     "audio:helper:info": "powershell -NoProfile -Command \"Write-Output 'Build the helper with: dotnet build .\\audio-helper\\Paraline.AudioBridge.csproj'\"",
     "build:helper": "dotnet publish .\\audio-helper\\Paraline.AudioBridge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o .\\build\\audio-helper",
     "pack:win": "npm run build:helper && electron-builder --dir --win nsis --x64",
