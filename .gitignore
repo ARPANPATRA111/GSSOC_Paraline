@@ -9,3 +9,5 @@ dist/
 build/
 
 *.csproj.user
+landing-dev.err.log
+landing-dev.out.log
