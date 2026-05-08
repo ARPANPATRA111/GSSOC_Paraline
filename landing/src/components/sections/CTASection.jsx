@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import SectionReveal from "../SectionReveal";
 
-export default function CTASection({ downloadUrl }) {
+export default function CTASection({ downloadUrl, isHostedInstaller }) {
   return (
     <section id="download" className="px-6 pb-24 pt-8 sm:px-8 sm:pb-28">
       <SectionReveal className="mx-auto max-w-5xl">
@@ -26,6 +26,7 @@ export default function CTASection({ downloadUrl }) {
             <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <a
                 href={downloadUrl}
+                download={isHostedInstaller ? undefined : "Paraline-Setup.exe"}
                 className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:scale-[1.02] hover:bg-cyan-100"
               >
                 Download Installer
