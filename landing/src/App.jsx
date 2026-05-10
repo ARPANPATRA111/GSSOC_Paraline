@@ -8,6 +8,7 @@ import CTASection from "./components/sections/CTASection";
 const downloadUrl = import.meta.env.VITE_DOWNLOAD_URL || "/downloads/Paraline-Setup.exe";
 const isHostedInstaller = /^https?:\/\//.test(downloadUrl);
 const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || "";
+const githubUrl = "https://github.com/SamXop123/Paraline";
 
 export default function App() {
   useEffect(() => {
@@ -69,14 +70,24 @@ export default function App() {
             <a href="#hero" className="text-xs uppercase tracking-[0.45em] text-white/70 transition hover:text-white">
               Paraline
             </a>
-            <a
-              href={downloadUrl}
-              download={isHostedInstaller ? undefined : "Paraline-Setup.exe"}
-              onClick={() => trackDownloadClick("navbar")}
-              className="rounded-full border border-white/12 bg-white/6 px-4 py-2 text-[11px] uppercase tracking-[0.28em] text-white/82 backdrop-blur transition hover:border-cyan-300/35 hover:bg-white/10 hover:text-white"
-            >
-              Windows Installer
-            </a>
+            <div className="flex items-center gap-3">
+              <a
+                href={githubUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] uppercase tracking-[0.28em] text-white/52 transition hover:text-white"
+              >
+                GitHub
+              </a>
+              <a
+                href={downloadUrl}
+                download={isHostedInstaller ? undefined : "Paraline-Setup.exe"}
+                onClick={() => trackDownloadClick("navbar")}
+                className="rounded-full border border-white/12 bg-white/6 px-4 py-2 text-[11px] uppercase tracking-[0.28em] text-white/82 backdrop-blur transition hover:border-cyan-300/35 hover:bg-white/10 hover:text-white"
+              >
+                Windows Installer
+              </a>
+            </div>
           </div>
         </header>
 
