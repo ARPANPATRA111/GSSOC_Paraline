@@ -104,6 +104,20 @@ function createDefaultSettings() {
   };
 }
 
+function createThemeDefaults() {
+  return {
+    ambientWave: { ...DEFAULT_SETTINGS.ambientWave },
+    reactiveBorder: { ...DEFAULT_SETTINGS.reactiveBorder },
+    flowBorder: { ...DEFAULT_SETTINGS.flowBorder },
+    sideBars: { ...DEFAULT_SETTINGS.sideBars },
+    flatRipples: { ...DEFAULT_SETTINGS.flatRipples },
+    dotParticles: { ...DEFAULT_SETTINGS.dotParticles },
+    rippleFlow: { ...DEFAULT_SETTINGS.rippleFlow },
+    snowBubbleParticles: { ...DEFAULT_SETTINGS.snowBubbleParticles },
+    edgeCrystals: { ...DEFAULT_SETTINGS.edgeCrystals }
+  };
+}
+
 function pick(value, validValues, fallback) {
   return validValues.has(value) ? value : fallback;
 }
@@ -306,5 +320,7 @@ function createSettingsStore(userDataPath) {
 
 module.exports = {
   DEFAULT_SETTINGS,
+  createDefaultSettings,
+  createThemeDefaults,
   createSettingsStore
 };
