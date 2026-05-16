@@ -1,4 +1,4 @@
-﻿# A Developer's Guide to Paraline
+# A Developer's Guide to Paraline
 
 High-level setup and codebase notes for contributors and developers.
 
@@ -25,6 +25,7 @@ Use this guide when setting up a development environment, understanding how comp
 - **Vanilla HTML / CSS / JavaScript** for renderer-side visuals
 - **C# / .NET 8** helper process for Windows system audio capture
 - **WASAPI Loopback** for real-time audio input from the active output device
+- **Vite / React / TailwindCSS** for the `landing` product website
 
 ---
 
@@ -53,6 +54,16 @@ You can also run:
 
 ```bash
 npm start
+```
+
+### Start the Landing Page
+
+The promotional landing website is located in the `landing` directory. To run it locally:
+
+```bash
+cd landing
+npm install
+npm run dev
 ```
 
 ### Build a Windows installer
@@ -244,6 +255,9 @@ Paraline/
 ├── README.md
 ├── docs/
 │   └── DEVELOPMENT.md
+├── landing/
+│   ├── src/                 # React landing page application
+│   └── public/              # Website assets and previews
 └── audio-helper/
     ├── Program.cs
     └── Paraline.AudioBridge.csproj
