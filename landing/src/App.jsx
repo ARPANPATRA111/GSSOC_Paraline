@@ -75,7 +75,7 @@ export default function App() {
       <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
       <div className="relative z-10">
-        <header className="fixed inset-x-0 top-0 z-40">
+        <header className="fixed inset-x-0 top-0 z-40 border border-gray-700 bg-[#02040c]/10 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 sm:px-8">
             <button
               onClick={toggleSidebar}
