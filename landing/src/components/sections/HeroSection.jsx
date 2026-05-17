@@ -53,7 +53,7 @@ export default function HeroSection({ downloadUrl, isHostedInstaller, onDownload
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/65 sm:text-lg"
           >
-            A desktop audio visualizer that lives on your screen edges.
+            Audio-reactive edge visualizer for Windows desktops that makes your music feel ambient.
           </motion.p>
 
           <motion.div
