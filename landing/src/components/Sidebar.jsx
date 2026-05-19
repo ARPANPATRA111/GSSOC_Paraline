@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
+export default function Sidebar({ isSidebarOpen, toggleSidebar, currentPage, setCurrentPage }) {
   return (
     <>
       {/* Backdrop overlay */}
@@ -41,8 +41,18 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
           <div className="flex flex-col gap-1 w-full">
             <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 mb-3 px-3 font-bold">Menu</p>
 
-            <SidebarItem icon="./sidebar-icons/home.svg" label="Home" active={true} />
-            <SidebarItem icon="./sidebar-icons/tools.svg" label="Installation Guide" />
+            <SidebarItem 
+              icon="./sidebar-icons/home.svg" 
+              label="Home" 
+              active={currentPage === "home"} 
+              onClick={() => { setCurrentPage("home"); toggleSidebar(); }}
+            />
+            <SidebarItem 
+              icon="./sidebar-icons/tools.svg" 
+              label="Installation Guide" 
+              active={currentPage === "installation"} 
+              onClick={() => { setCurrentPage("installation"); toggleSidebar(); }}
+            />
             <SidebarItem icon="./sidebar-icons/theme.svg" label="Themes" />
             <SidebarItem icon="./sidebar-icons/settings.svg" label="Settings" />
           </div>
@@ -51,7 +61,11 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
             <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 mb-3 px-3 font-bold">Support</p>
 
             <SidebarItem icon="./sidebar-icons/customer-service.svg" label="Contact Us" />
-            <SidebarItem icon="./sidebar-icons/github-svgrepo-com.svg" label="Github" />
+            <SidebarItem 
+              icon="./sidebar-icons/github-svgrepo-com.svg" 
+              label="Github" 
+              onClick={() => window.open("https://github.com/SamXop123/Paraline", "_blank")}
+            />
           </div>
         </div>
 
@@ -70,9 +84,12 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
   );
 }
 
-function SidebarItem({ icon, label, active }) {
+function SidebarItem({ icon, label, active, onClick }) {
   return (
-    <button className={`relative flex items-center w-full px-3 py-3.5 rounded-2xl transition-all duration-150 group overflow-hidden ${active ? 'bg-white/[0.08] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'text-gray-400 hover:text-white hover:bg-white/[0.04]'}`}>
+    <button 
+      onClick={onClick}
+      className={`relative flex items-center w-full px-3 py-3.5 rounded-2xl transition-all duration-150 group overflow-hidden ${active ? 'bg-white/[0.08] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'text-gray-400 hover:text-white hover:bg-white/[0.04]'}`}
+    >
       {/* Hover background highlight */}
       <div className="absolute inset-0 bg-gradient-to-r from-sky-500/0 via-sky-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
