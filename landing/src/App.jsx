@@ -9,6 +9,7 @@ import Footer from "./components/Footer";
 import Sidebar from "./components/Sidebar";
 import InstallationGuide from "./components/pages/InstallationGuide";
 import TermsPage from "./components/pages/TermsPage";
+import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import FAQPage from "./components/pages/FAQPage";
 
 const downloadUrl = import.meta.env.VITE_DOWNLOAD_URL || "/downloads/Paraline-Setup.exe";
@@ -60,6 +61,10 @@ export default function App() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState("home");
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPage]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -157,9 +162,11 @@ export default function App() {
           <TermsPage setCurrentPage={setCurrentPage} />
         ) : currentPage === "installation" ? (
           <InstallationGuide setCurrentPage={setCurrentPage} />
-        ) : (
+        ) : currentPage === "privacy" ? (
+          <PrivacyPolicy setCurrentPage={setCurrentPage} />
+        ) : currentPage === "faq" ? (
           <FAQPage setCurrentPage={setCurrentPage} />
-        )}
+        ) : null}
         </main>
         <Footer setCurrentPage={setCurrentPage} />
       </div>
