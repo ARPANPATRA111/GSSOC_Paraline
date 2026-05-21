@@ -14,11 +14,12 @@ import FAQPage from "./components/pages/FAQPage";
 const downloadUrl = import.meta.env.VITE_DOWNLOAD_URL || "/downloads/Paraline-Setup.exe";
 const isHostedInstaller = /^https?:\/\//.test(downloadUrl);
 const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || "";
+const analyticsEnabled = import.meta.env.VITE_ENABLE_ANALYTICS === "true";
 const githubUrl = "https://github.com/SamXop123/Paraline";
 
 export default function App() {
   useEffect(() => {
-    if (!gaMeasurementId) {
+    if (!analyticsEnabled || !gaMeasurementId) {
       return undefined;
     }
 
@@ -95,7 +96,7 @@ export default function App() {
             <button
               onClick={toggleSidebar}
               className="absolute top-5 left-5">
-                <img src='./sidebar-icons/menu.svg' className="h-8"/>
+                <img src='./sidebar-icons/menu.svg' className="h-8 w-10 object-contain"/>
             </button>
 
             <a 
@@ -164,7 +165,7 @@ export default function App() {
         <Footer setCurrentPage={setCurrentPage} />
       </div>
 
-      <Analytics />
+      {analyticsEnabled ? <Analytics /> : null}
     </div>
   );
 }
