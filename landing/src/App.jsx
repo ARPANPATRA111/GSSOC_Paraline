@@ -8,6 +8,7 @@ import CTASection from "./components/sections/CTASection";
 import Footer from "./components/Footer";
 import Sidebar from "./components/Sidebar";
 import InstallationGuide from "./components/pages/InstallationGuide";
+import TermsPage from "./components/pages/TermsPage";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import FAQPage from "./components/pages/FAQPage";
 
@@ -129,38 +130,37 @@ export default function App() {
 
         <main>
           {currentPage === "home" ? (
-           <>
-          <section id="hero" className="scroll-mt-28">
-          <HeroSection
-            downloadUrl={downloadUrl}
-            isHostedInstaller={isHostedInstaller}
-            onDownloadClick={() => trackDownloadClick("hero")}
-            />
-            </section>
-            <section id="experience" className="scroll-mt-28">
-          <ExperienceSection />
-
-            </section>
-            <section id="themes" className="scroll-mt-28">
-          <ThemeShowcaseSection />
-
-            </section>
-            <section id="settings" className="scroll-mt-28">
-
-          <CTASection
-            downloadUrl={downloadUrl}
-            isHostedInstaller={isHostedInstaller}
-            onDownloadClick={() => trackDownloadClick("cta")}
-            />
-            </section>
-        </>
-        ) : currentPage === "installation" ? (
-          <InstallationGuide setCurrentPage={setCurrentPage} />
-        ) : currentPage === "privacy" ? (
-          <PrivacyPolicy setCurrentPage={setCurrentPage} />
-        ) : currentPage === "faq" ? (
-          <FAQPage setCurrentPage={setCurrentPage} />
-        ) : null}
+            <>
+              <section id="hero" className="scroll-mt-28">
+                <HeroSection
+                  downloadUrl={downloadUrl}
+                  isHostedInstaller={isHostedInstaller}
+                  onDownloadClick={() => trackDownloadClick("hero")}
+                />
+              </section>
+              <section id="experience" className="scroll-mt-28">
+                <ExperienceSection />
+              </section>
+              <section id="themes" className="scroll-mt-28">
+                <ThemeShowcaseSection />
+              </section>
+              <section id="settings" className="scroll-mt-28">
+                <CTASection
+                  downloadUrl={downloadUrl}
+                  isHostedInstaller={isHostedInstaller}
+                  onDownloadClick={() => trackDownloadClick("cta")}
+                />
+              </section>
+            </>
+          ) : currentPage === "installation" ? (
+            <InstallationGuide setCurrentPage={setCurrentPage} />
+          ) : currentPage === "terms" ? (
+            <TermsPage setCurrentPage={setCurrentPage} />
+          ) : currentPage === "privacy" ? (
+            <PrivacyPolicy setCurrentPage={setCurrentPage} />
+          ) : currentPage === "faq" ? (
+            <FAQPage setCurrentPage={setCurrentPage} />
+          ) : null}
         </main>
         <Footer setCurrentPage={setCurrentPage} />
       </div>
