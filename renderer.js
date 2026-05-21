@@ -682,3 +682,669 @@ if (debugEnabled) {
 
 resizeCanvas();
 requestAnimationFrame(renderFrame);
+
+// --- macOS Glassmorphic Context Menu Integration ---
+
+const THEME_INFOS = {
+  ambientWave: {
+    label: "Ambient Wave",
+    settingsHeader: "Ambient Wave Settings",
+    options: [
+      {
+        key: "tone",
+        label: "Tone",
+        choices: [
+          { value: "blue", label: "Blue" },
+          { value: "purple", label: "Purple" },
+          { value: "warm", label: "Warm" }
+        ]
+      },
+      {
+        key: "sensitivity",
+        label: "Sensitivity",
+        choices: [
+          { value: "low", label: "Low" },
+          { value: "medium", label: "Medium" },
+          { value: "high", label: "High" }
+        ]
+      },
+      {
+        key: "edgeMode",
+        label: "Edge Mode",
+        choices: [
+          { value: "top", label: "Top" },
+          { value: "bottom", label: "Bottom" },
+          { value: "both", label: "Both" }
+        ]
+      },
+      {
+        key: "glowStrength",
+        label: "Glow Strength",
+        choices: [
+          { value: "soft", label: "Soft" },
+          { value: "medium", label: "Medium" },
+          { value: "strong", label: "Strong" }
+        ]
+      }
+    ]
+  },
+  reactiveBorder: {
+    label: "Reactive Border",
+    settingsHeader: "Reactive Border Settings",
+    options: [
+      {
+        key: "colorStyle",
+        label: "Color Style",
+        choices: [
+          { value: "rainbow", label: "Rainbow" },
+          { value: "neonBlue", label: "Neon Blue" },
+          { value: "neonPurple", label: "Neon Purple" },
+          { value: "warmGlow", label: "Warm Glow" }
+        ]
+      },
+      {
+        key: "intensity",
+        label: "Intensity",
+        choices: [
+          { value: "low", label: "Low" },
+          { value: "medium", label: "Medium" },
+          { value: "high", label: "High" }
+        ]
+      },
+      {
+        key: "borderThickness",
+        label: "Border Thickness",
+        choices: [
+          { value: "thin", label: "Thin" },
+          { value: "medium", label: "Medium" },
+          { value: "thick", label: "Thick" }
+        ]
+      },
+      {
+        key: "glowStrength",
+        label: "Glow Strength",
+        choices: [
+          { value: "soft", label: "Soft" },
+          { value: "medium", label: "Medium" },
+          { value: "strong", label: "Strong" }
+        ]
+      }
+    ]
+  },
+  flowBorder: {
+    label: "Flow Border",
+    settingsHeader: "Flow Border Settings",
+    options: [
+      {
+        key: "direction",
+        label: "Direction",
+        choices: [
+          { value: "clockwise", label: "Clockwise" },
+          { value: "anticlockwise", label: "Anticlockwise" }
+        ]
+      },
+      {
+        key: "speedMode",
+        label: "Speed Mode",
+        choices: [
+          { value: "calm", label: "Calm" },
+          { value: "balanced", label: "Balanced" },
+          { value: "energetic", label: "Energetic" }
+        ]
+      },
+      {
+        key: "segmentLength",
+        label: "Segment Length",
+        choices: [
+          { value: "short", label: "Short" },
+          { value: "medium", label: "Medium" },
+          { value: "long", label: "Long" }
+        ]
+      },
+      {
+        key: "glowStrength",
+        label: "Glow Strength",
+        choices: [
+          { value: "soft", label: "Soft" },
+          { value: "medium", label: "Medium" },
+          { value: "strong", label: "Strong" }
+        ]
+      },
+      {
+        key: "colorStyle",
+        label: "Color Style",
+        choices: [
+          { value: "rainbow", label: "Rainbow" },
+          { value: "cool", label: "Cool Colors" },
+          { value: "warm", label: "Warm Colors" }
+        ]
+      }
+    ]
+  },
+  sideBars: {
+    label: "Side Bars",
+    settingsHeader: "Side Bars Settings",
+    options: [
+      {
+        key: "colorStyle",
+        label: "Color Style",
+        choices: [
+          { value: "white", label: "White" },
+          { value: "yellow", label: "Yellow" },
+          { value: "aqua", label: "Aqua" },
+          { value: "multicolor", label: "Multicolor" }
+        ]
+      },
+      {
+        key: "barThickness",
+        label: "Bar Thickness",
+        choices: [
+          { value: "thin", label: "Thin" },
+          { value: "medium", label: "Medium" },
+          { value: "thick", label: "Thick" }
+        ]
+      },
+      {
+        key: "sensitivity",
+        label: "Sensitivity",
+        choices: [
+          { value: "low", label: "Low" },
+          { value: "medium", label: "Medium" },
+          { value: "high", label: "High" }
+        ]
+      },
+      {
+        key: "barDensity",
+        label: "Bar Density",
+        choices: [
+          { value: "low", label: "Low" },
+          { value: "medium", label: "Medium" },
+          { value: "high", label: "High" }
+        ]
+      }
+    ]
+  },
+  flatRipples: {
+    label: "Flat Ripples",
+    settingsHeader: "Flat Ripples Settings",
+    options: [
+      {
+        key: "mode",
+        label: "Mode",
+        choices: [
+          { value: "sideRipples", label: "Side Ripples" },
+          { value: "flatRipples", label: "Flat Ripples" }
+        ]
+      },
+      {
+        key: "intensity",
+        label: "Intensity",
+        choices: [
+          { value: "low", label: "Low" },
+          { value: "medium", label: "Medium" },
+          { value: "high", label: "High" }
+        ]
+      },
+      {
+        key: "colorStyle",
+        label: "Color Style",
+        choices: [
+          { value: "red", label: "Red" },
+          { value: "blue", label: "Blue" },
+          { value: "white", label: "White" },
+          { value: "multicolor", label: "Multicolor" }
+        ]
+      },
+      {
+        key: "speed",
+        label: "Speed",
+        choices: [
+          { value: "calm", label: "Calm" },
+          { value: "balanced", label: "Balanced" },
+          { value: "energetic", label: "Energetic" }
+        ]
+      }
+    ]
+  },
+  dotParticles: {
+    label: "Dot Particles",
+    settingsHeader: "Dot Particles Settings",
+    options: [
+      {
+        key: "density",
+        label: "Density",
+        choices: [
+          { value: "low", label: "Low" },
+          { value: "medium", label: "Medium" },
+          { value: "high", label: "High" }
+        ]
+      },
+      {
+        key: "motionStyle",
+        label: "Motion Style",
+        choices: [
+          { value: "calm", label: "Calm" },
+          { value: "balanced", label: "Balanced" },
+          { value: "energetic", label: "Energetic" }
+        ]
+      },
+      {
+        key: "directionBehavior",
+        label: "Direction Behavior",
+        choices: [
+          { value: "mostlyClockwise", label: "Mostly Clockwise" },
+          { value: "mostlyAnticlockwise", label: "Mostly Anticlockwise" },
+          { value: "beatReactive", label: "Beat Reactive" }
+        ]
+      },
+      {
+        key: "glowStrength",
+        label: "Glow Strength",
+        choices: [
+          { value: "soft", label: "Soft" },
+          { value: "medium", label: "Medium" },
+          { value: "strong", label: "Strong" }
+        ]
+      }
+    ]
+  },
+  rippleFlow: {
+    label: "Ripple Flow",
+    settingsHeader: "Ripple Flow Settings",
+    options: [
+      {
+        key: "mode",
+        label: "Mode",
+        choices: [
+          { value: "sideRipples", label: "Side Ripples" },
+          { value: "flatRipples", label: "Flat Ripples" }
+        ]
+      },
+      {
+        key: "intensity",
+        label: "Intensity",
+        choices: [
+          { value: "low", label: "Low" },
+          { value: "medium", label: "Medium" },
+          { value: "high", label: "High" }
+        ]
+      },
+      {
+        key: "sensitivity",
+        label: "Sensitivity",
+        choices: [
+          { value: "low", label: "Low" },
+          { value: "medium", label: "Medium" },
+          { value: "high", label: "High" }
+        ]
+      },
+      {
+        key: "colorStyle",
+        label: "Color Style",
+        choices: [
+          { value: "red", label: "Red" },
+          { value: "blue", label: "Blue" },
+          { value: "white", label: "White" }
+        ]
+      }
+    ]
+  },
+  snowBubbleParticles: {
+    label: "Snow Bubble Particles",
+    settingsHeader: "Snow Bubble Settings",
+    options: [
+      {
+        key: "fallArea",
+        label: "Fall Area",
+        choices: [
+          { value: "middle", label: "Middle Only" },
+          { value: "fullWidth", label: "Full Width" }
+        ]
+      },
+      {
+        key: "density",
+        label: "Density",
+        choices: [
+          { value: "low", label: "Low" },
+          { value: "medium", label: "Medium" },
+          { value: "high", label: "High" }
+        ]
+      },
+      {
+        key: "motionStyle",
+        label: "Motion Style",
+        choices: [
+          { value: "calm", label: "Calm" },
+          { value: "balanced", label: "Balanced" },
+          { value: "energetic", label: "Energetic" }
+        ]
+      },
+      {
+        key: "glowStrength",
+        label: "Glow Strength",
+        choices: [
+          { value: "soft", label: "Soft" },
+          { value: "medium", label: "Medium" },
+          { value: "strong", label: "Strong" }
+        ]
+      },
+      {
+        key: "particleSize",
+        label: "Particle Size",
+        choices: [
+          { value: "small", label: "Small" },
+          { value: "medium", label: "Medium" },
+          { value: "large", label: "Large" }
+        ]
+      }
+    ]
+  },
+  edgeCrystals: {
+    label: "Edge Crystals",
+    settingsHeader: "Edge Crystals Settings",
+    options: [
+      {
+        key: "flutterStyle",
+        label: "Flutter Style",
+        choices: [
+          { value: "soft", label: "Soft" },
+          { value: "balanced", label: "Balanced" },
+          { value: "energetic", label: "Energetic" }
+        ]
+      },
+      {
+        key: "density",
+        label: "Density",
+        choices: [
+          { value: "low", label: "Low" },
+          { value: "medium", label: "Medium" },
+          { value: "high", label: "High" }
+        ]
+      },
+      {
+        key: "glowStrength",
+        label: "Glow Strength",
+        choices: [
+          { value: "soft", label: "Soft" },
+          { value: "medium", label: "Medium" },
+          { value: "strong", label: "Strong" }
+        ]
+      },
+      {
+        key: "colorStyle",
+        label: "Color Style",
+        choices: [
+          { value: "blue", label: "Blue" },
+          { value: "purple", label: "Purple" },
+          { value: "red", label: "Red" },
+          { value: "white", label: "White" }
+        ]
+      },
+      {
+        key: "edgeMode",
+        label: "Edge Mode",
+        choices: [
+          { value: "left", label: "Left Edge" },
+          { value: "right", label: "Right Edge" },
+          { value: "both", label: "Both Edges" }
+        ]
+      }
+    ]
+  }
+};
+
+let isMenuOpen = false;
+
+function getContextMenuStructure() {
+  const currentTheme = visualizerState.selectedTheme;
+  const isPaused = visualizerState.paused;
+
+  const structure = [
+    { type: 'label', label: 'Paraline Visualizer' },
+    {
+      type: 'item',
+      label: isPaused ? 'Resume Visualizer' : 'Pause Visualizer',
+      checked: isPaused,
+      action: () => {
+        window.visualizerSettings.action('toggle-paused');
+      }
+    },
+    {
+      type: 'item',
+      label: 'Reload Visualizer',
+      action: () => {
+        window.visualizerSettings.action('reload');
+      }
+    },
+    { type: 'divider' },
+    
+    // Theme selection submenu
+    {
+      type: 'item',
+      label: 'Visualizer Mode',
+      submenu: Object.keys(THEME_INFOS).map(themeId => ({
+        type: 'item',
+        label: THEME_INFOS[themeId].label,
+        checked: currentTheme === themeId,
+        action: () => {
+          window.visualizerSettings.update({ selectedTheme: themeId });
+        }
+      }))
+    }
+  ];
+
+  // Add the settings of the currently selected theme
+  const activeThemeInfo = THEME_INFOS[currentTheme];
+  if (activeThemeInfo && activeThemeInfo.options && activeThemeInfo.options.length > 0) {
+    structure.push({ type: 'divider' });
+    structure.push({ type: 'label', label: activeThemeInfo.settingsHeader });
+
+    activeThemeInfo.options.forEach(opt => {
+      const currentVal = visualizerState[currentTheme]?.[opt.key];
+      
+      structure.push({
+        type: 'item',
+        label: opt.label,
+        submenu: opt.choices.map(choice => ({
+          type: 'item',
+          label: choice.label,
+          checked: currentVal === choice.value,
+          action: () => {
+            window.visualizerSettings.update({
+              [currentTheme]: {
+                [opt.key]: choice.value
+              }
+            });
+          }
+        }))
+      });
+    });
+  }
+
+  // Divider and utility actions
+  structure.push({ type: 'divider' });
+  structure.push({
+    type: 'item',
+    label: 'Reset Settings',
+    submenu: [
+      {
+        type: 'item',
+        label: 'Reset Current Theme',
+        action: () => {
+          window.visualizerSettings.action('reset-theme');
+        }
+      },
+      {
+        type: 'item',
+        label: 'Reset All Settings',
+        action: () => {
+          window.visualizerSettings.action('reset-all');
+        }
+      }
+    ]
+  });
+
+  structure.push({ type: 'divider' });
+  structure.push({
+    type: 'item',
+    label: 'Quit Paraline',
+    action: () => {
+      window.visualizerSettings.action('quit');
+    }
+  });
+
+  return structure;
+}
+
+function buildMenuDOM(items, container, subDirectionLeft) {
+  items.forEach(item => {
+    if (item.type === 'label') {
+      const el = document.createElement("div");
+      el.className = "menu-label";
+      el.textContent = item.label;
+      container.appendChild(el);
+    } else if (item.type === 'divider') {
+      const el = document.createElement("div");
+      el.className = "menu-divider";
+      container.appendChild(el);
+    } else if (item.type === 'item') {
+      const el = document.createElement("div");
+      el.className = "menu-item";
+      if (subDirectionLeft && item.submenu) {
+        el.classList.add("submenu-left");
+      }
+
+      // Checkmark column
+      const checkEl = document.createElement("div");
+      checkEl.className = "item-check";
+      if (item.checked) {
+        checkEl.textContent = "✓";
+      }
+      el.appendChild(checkEl);
+
+      // Label
+      const labelEl = document.createElement("div");
+      labelEl.className = "item-label";
+      labelEl.textContent = item.label;
+      el.appendChild(labelEl);
+
+      // Submenu and Chevrons
+      if (item.submenu) {
+        const chevronEl = document.createElement("div");
+        chevronEl.className = "item-chevron";
+        chevronEl.textContent = "›";
+        el.appendChild(chevronEl);
+
+        const submenuContainer = document.createElement("div");
+        submenuContainer.className = "submenu";
+        // Recursively build submenu
+        buildMenuDOM(item.submenu, submenuContainer, subDirectionLeft);
+        el.appendChild(submenuContainer);
+      }
+
+      // Action listener
+      if (item.action) {
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          item.action();
+          closeMenu();
+        });
+      }
+
+      container.appendChild(el);
+    }
+  });
+}
+
+function showMenu(x, y) {
+  isMenuOpen = true;
+
+  // 1. Intercept mouse events in overlay window
+  if (window.visualizerSettings && typeof window.visualizerSettings.setIgnoreMouseEvents === 'function') {
+    window.visualizerSettings.setIgnoreMouseEvents(false);
+  }
+
+  // 2. Clear previous menu content
+  const menuContainer = document.getElementById("context-menu");
+  if (!menuContainer) return;
+  menuContainer.innerHTML = "";
+
+  // 3. Build the menu tree
+  const structure = getContextMenuStructure();
+
+  // 4. Calculate bounds and submenu direction
+  const menuWidth = 240;
+  const menuHeight = 400; // estimated max height
+  let targetX = x;
+  let targetY = y;
+
+  if (x + menuWidth > window.innerWidth) {
+    targetX = window.innerWidth - menuWidth - 10;
+  }
+  if (y + menuHeight > window.innerHeight) {
+    targetY = window.innerHeight - menuHeight - 10;
+  }
+  if (targetX < 10) targetX = 10;
+  if (targetY < 10) targetY = 10;
+
+  const subDirectionLeft = (targetX + menuWidth + 200 > window.innerWidth);
+
+  // 5. Populate DOM
+  buildMenuDOM(structure, menuContainer, subDirectionLeft);
+
+  // 6. Position and show the menu
+  menuContainer.style.left = `${targetX}px`;
+  menuContainer.style.top = `${targetY}px`;
+  menuContainer.classList.remove("hidden");
+
+  // 7. Show the click-capturing shield
+  const menuShield = document.getElementById("menu-shield");
+  if (menuShield) {
+    menuShield.classList.remove("hidden");
+  }
+}
+
+function closeMenu() {
+  if (!isMenuOpen) return;
+  isMenuOpen = false;
+
+  const menuContainer = document.getElementById("context-menu");
+  const menuShield = document.getElementById("menu-shield");
+
+  if (menuContainer) {
+    menuContainer.classList.add("hidden");
+  }
+  if (menuShield) {
+    menuShield.classList.add("hidden");
+  }
+
+  // Restore click-through on window
+  if (window.visualizerSettings && typeof window.visualizerSettings.setIgnoreMouseEvents === 'function') {
+    window.visualizerSettings.setIgnoreMouseEvents(true);
+  }
+}
+
+// Event listeners setup
+const menuShield = document.getElementById("menu-shield");
+if (menuShield) {
+  menuShield.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeMenu();
+  });
+}
+
+// Listen for context menu request from tray click
+if (window.visualizerSettings && typeof window.visualizerSettings.onShowMenu === 'function') {
+  window.visualizerSettings.onShowMenu((menuPos) => {
+    if (menuPos && typeof menuPos.x === 'number' && typeof menuPos.y === 'number') {
+      showMenu(menuPos.x, menuPos.y);
+    }
+  });
+}
+
+// Press Escape key to close the menu
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeMenu();
+  }
+});

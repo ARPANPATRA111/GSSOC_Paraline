@@ -940,12 +940,31 @@ function refreshTrayMenu() {
     }
   ]);
 
-  tray.setContextMenu(menu);
+  // We render the context menu in the HTML page to achieve the macOS glassmorphic look
+  // tray.setContextMenu(menu);
   tray.setToolTip(`Paraline Visualizer - ${THEME_LABELS[visualizerSettings.selectedTheme]}`);
+}
+
+function showCustomContextMenu() {
+  if (!overlayWindow || overlayWindow.isDestroyed()) {
+    return;
+  }
+  const cursorPoint = screen.getCursorScreenPoint();
+  overlayWindow.webContents.send("show-context-menu", {
+    x: cursorPoint.x,
+    y: cursorPoint.y
+  });
+  overlayWindow.setIgnoreMouseEvents(false);
 }
 
 function createTray() {
   tray = new Tray(createTrayIcon());
+  tray.on("click", () => {
+    showCustomContextMenu();
+  });
+  tray.on("right-click", () => {
+    showCustomContextMenu();
+  });
   refreshTrayMenu();
 }
 
@@ -966,6 +985,36 @@ app.whenReady().then(() => {
 
   ipcMain.handle("visualizer-settings:get", () => {
     return getRendererSettings();
+  });
+
+  ipcMain.on("visualizer-settings:update", (event, patch) => {
+    updateSettings(patch);
+  });
+
+  ipcMain.on("visualizer-action", (event, { action, data }) => {
+    if (action === "toggle-paused") {
+      togglePaused();
+    } else if (action === "reload") {
+      reloadVisualizer();
+    } else if (action === "reset-theme") {
+      resetCurrentThemeSettings();
+    } else if (action === "reset-all") {
+      resetAllSettings();
+    } else if (action === "open-url") {
+      openExternalUrl(data);
+    } else if (action === "quit") {
+      app.quit();
+    }
+  });
+
+  ipcMain.on("set-ignore-mouse-events", (event, ignore) => {
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+      if (ignore) {
+        overlayWindow.setIgnoreMouseEvents(true, { forward: true });
+      } else {
+        overlayWindow.setIgnoreMouseEvents(false);
+      }
+    }
   });
 
   createOverlayWindow();

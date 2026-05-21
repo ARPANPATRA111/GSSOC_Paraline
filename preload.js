@@ -25,5 +25,22 @@ contextBridge.exposeInMainWorld("visualizerSettings", {
   },
   get() {
     return ipcRenderer.invoke("visualizer-settings:get");
+  },
+  update(patch) {
+    ipcRenderer.send("visualizer-settings:update", patch);
+  },
+  action(action, data) {
+    ipcRenderer.send("visualizer-action", { action, data });
+  },
+  setIgnoreMouseEvents(ignore) {
+    ipcRenderer.send("set-ignore-mouse-events", ignore);
+  },
+  onShowMenu(listener) {
+    const wrapped = (_event, payload) => listener(payload);
+    ipcRenderer.on("show-context-menu", wrapped);
+
+    return () => {
+      ipcRenderer.removeListener("show-context-menu", wrapped);
+    };
   }
 });
