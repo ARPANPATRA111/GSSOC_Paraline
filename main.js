@@ -953,6 +953,39 @@ function showCustomContextMenu() {
     return;
   }
   const cursorPoint = screen.getCursorScreenPoint();
+  let trayBounds = null;
+  let inOverflow = false;
+  let taskbarPosition = "bottom";
+
+  if (tray) {
+    try {
+      trayBounds = tray.getBounds();
+      const display = screen.getDisplayMatching(trayBounds);
+      const { bounds, workArea } = display;
+
+      if (workArea.x > bounds.x) {
+        taskbarPosition = "left";
+      } else if (workArea.y > bounds.y) {
+        taskbarPosition = "top";
+      } else if (workArea.width < bounds.width) {
+        taskbarPosition = "right";
+      } else {
+        taskbarPosition = "bottom";
+      }
+
+      if (taskbarPosition === "bottom") {
+        inOverflow = trayBounds.y < (workArea.y + workArea.height - 10);
+      } else if (taskbarPosition === "top") {
+        inOverflow = trayBounds.y > (workArea.y + 10);
+      } else if (taskbarPosition === "left") {
+        inOverflow = trayBounds.x > (workArea.x + 10);
+      } else if (taskbarPosition === "right") {
+        inOverflow = trayBounds.x < (workArea.x + workArea.width - 10);
+      }
+    } catch (err) {
+      console.error("Failed to calculate tray bounds / overflow status:", err);
+    }
+  }
 
   // Force Windows to refresh the window's z-order relative to other topmost windows
   // (like the tray overflow panel) by toggling setAlwaysOnTop and calling show()/focus()
@@ -964,7 +997,10 @@ function showCustomContextMenu() {
 
   overlayWindow.webContents.send("show-context-menu", {
     x: cursorPoint.x,
-    y: cursorPoint.y
+    y: cursorPoint.y,
+    trayBounds,
+    inOverflow,
+    taskbarPosition
   });
   overlayWindow.setIgnoreMouseEvents(false);
 }

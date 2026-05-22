@@ -815,8 +815,8 @@ const THEME_INFOS = {
         label: "Color Style",
         choices: [
           { value: "rainbow", label: "Rainbow" },
-          { value: "cool", label: "Cool Colors" },
-          { value: "warm", label: "Warm Colors" }
+          { value: "cool", label: "Cool" },
+          { value: "warm", label: "Warm" }
         ]
       }
     ]
@@ -857,16 +857,16 @@ const THEME_INFOS = {
         key: "barDensity",
         label: "Bar Count",
         choices: [
-          { value: "low", label: "Low" },
+          { value: "low", label: "Less" },
           { value: "medium", label: "Medium" },
-          { value: "high", label: "High" }
+          { value: "high", label: "More" }
         ]
       }
     ]
   },
   flatRipples: {
-    label: "Flat Ripples",
-    settingsHeader: "Flat Ripples Settings",
+    label: "Pulse Lines",
+    settingsHeader: "Pulse Lines Settings",
     options: [
       {
         key: "mode",
@@ -887,7 +887,7 @@ const THEME_INFOS = {
       },
       {
         key: "colorStyle",
-        label: "Color Style",
+        label: "Color",
         choices: [
           { value: "red", label: "Red" },
           { value: "blue", label: "Blue" },
@@ -980,7 +980,7 @@ const THEME_INFOS = {
       },
       {
         key: "colorStyle",
-        label: "Color Style",
+        label: "Color",
         choices: [
           { value: "red", label: "Red" },
           { value: "blue", label: "Blue" },
@@ -990,15 +990,15 @@ const THEME_INFOS = {
     ]
   },
   snowBubbleParticles: {
-    label: "Snow Bubble Particles",
-    settingsHeader: "Snow Bubble Settings",
+    label: "Snow Particles",
+    settingsHeader: "Snow Particles Settings",
     options: [
       {
         key: "fallArea",
-        label: "Fall Area",
+        label: "Snowfall Area",
         choices: [
-          { value: "middle", label: "Middle Only" },
-          { value: "fullWidth", label: "Full Width" }
+          { value: "middle", label: "Middle Section" },
+          { value: "fullWidth", label: "Entire Top Border" }
         ]
       },
       {
@@ -1084,9 +1084,9 @@ const THEME_INFOS = {
         key: "edgeMode",
         label: "Edge Mode",
         choices: [
-          { value: "left", label: "Left Edge" },
-          { value: "right", label: "Right Edge" },
-          { value: "both", label: "Both Edges" }
+          { value: "left", label: "Left" },
+          { value: "right", label: "Right" },
+          { value: "both", label: "Both" }
         ]
       }
     ]
@@ -1342,7 +1342,7 @@ function buildMenuDOM(items, container, subDirectionLeft) {
   });
 }
 
-function showMenu(x, y) {
+function showMenu(x, y, trayBounds, inOverflow, taskbarPosition) {
   isMenuOpen = true;
 
   // 1. Intercept mouse events in overlay window
@@ -1377,12 +1377,49 @@ function showMenu(x, y) {
   let targetX = x;
   let targetY = y;
 
-  if (x + actualWidth > window.innerWidth) {
-    targetX = x - actualWidth;
+  if (trayBounds && typeof trayBounds.x === 'number') {
+    if (inOverflow) {
+      // Clicked inside the overflow panel: place context menu adjacent to it (offset by 140px to clear the panel bounds)
+      if (taskbarPosition === 'left') {
+        targetX = trayBounds.x + trayBounds.width + 140;
+        targetY = trayBounds.y;
+      } else if (taskbarPosition === 'right') {
+        targetX = trayBounds.x - actualWidth - 140;
+        targetY = trayBounds.y;
+      } else if (taskbarPosition === 'top') {
+        targetX = trayBounds.x - actualWidth - 140;
+        targetY = trayBounds.y;
+      } else { // bottom
+        targetX = trayBounds.x - actualWidth - 140;
+        targetY = (trayBounds.y + trayBounds.height) - actualHeight;
+      }
+    } else {
+      // Clicked directly on the taskbar: place context menu directly adjacent/centered near the tray icon
+      if (taskbarPosition === 'left') {
+        targetX = trayBounds.x + trayBounds.width + 5;
+        targetY = trayBounds.y + (trayBounds.height / 2) - (actualHeight / 2);
+      } else if (taskbarPosition === 'right') {
+        targetX = trayBounds.x - actualWidth - 5;
+        targetY = trayBounds.y + (trayBounds.height / 2) - (actualHeight / 2);
+      } else if (taskbarPosition === 'top') {
+        targetX = trayBounds.x + (trayBounds.width / 2) - (actualWidth / 2);
+        targetY = trayBounds.y + trayBounds.height + 5;
+      } else { // bottom
+        targetX = trayBounds.x + (trayBounds.width / 2) - (actualWidth / 2);
+        targetY = trayBounds.y - actualHeight - 5;
+      }
+    }
+  } else {
+    // Fallback using cursor coordinates
+    if (x + actualWidth > window.innerWidth) {
+      targetX = x - actualWidth;
+    }
+    if (y + actualHeight > window.innerHeight) {
+      targetY = y - actualHeight;
+    }
   }
-  if (y + actualHeight > window.innerHeight) {
-    targetY = y - actualHeight;
-  }
+
+  // Clamping to screen boundaries (ensuring at least 10px buffer)
   if (targetX < 10) targetX = 10;
   if (targetY < 10) targetY = 10;
   if (targetX + actualWidth > window.innerWidth - 10) {
@@ -1442,7 +1479,7 @@ if (menuShield) {
 if (window.visualizerSettings && typeof window.visualizerSettings.onShowMenu === 'function') {
   window.visualizerSettings.onShowMenu((menuPos) => {
     if (menuPos && typeof menuPos.x === 'number' && typeof menuPos.y === 'number') {
-      showMenu(menuPos.x, menuPos.y);
+      showMenu(menuPos.x, menuPos.y, menuPos.trayBounds, menuPos.inOverflow, menuPos.taskbarPosition);
     }
   });
 }
