@@ -1044,6 +1044,8 @@ app.whenReady().then(() => {
         overlayWindow.setIgnoreMouseEvents(false);
       }
     }
+  });
+
   ipcMain.handle("visualizer-settings:update", (_event, patch) => {
     updateSettings(patch);
     return getRendererSettings();
