@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, screen, shell } = 
 const path = require("path");
 const { createAudioBridge } = require("./audioBridge");
 const { createDefaultSettings, createSettingsStore, createThemeDefaults } = require("./settingsStore");
+const ThemeAgent = require('./themeAgent');
 
 let overlayWindow;
 let lastBridgeMode = null;
@@ -1115,6 +1116,14 @@ app.whenReady().then(() => {
   visualizerSettings = settingsStore.save(settingsStore.load());
   applyStartupSettings(visualizerSettings.launchOnStartup);
 
+// --- NEW: Start Theme Automation Agent ---
+  const themeAgent = new ThemeAgent(settingsStore, (themeName) => {
+    settingsStore.set('selectedTheme', themeName); 
+  });
+  
+  themeAgent.start();
+  // -----------------------------------------
+  
   ipcMain.handle("audio-bridge-status", () => {
     if (!audioBridge) {
       return {

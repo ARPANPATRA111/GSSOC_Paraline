@@ -4,6 +4,13 @@ const path = require("path");
 const DEFAULT_SETTINGS = Object.freeze({
   launchOnStartup: false,
   selectedTheme: "ambientWave",
+  themeAutomation: Object.freeze({
+    enabled: false,
+    checkIntervalMinutes: 30, 
+    mode: "dayNight",         
+    dayTheme: "ambientWave", 
+    nightTheme: "reactiveBorder"
+  }),
   ambientWave: Object.freeze({
     tone: "blue",
     sensitivity: "medium",
