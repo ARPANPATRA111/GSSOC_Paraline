@@ -2,7 +2,9 @@ const fs = require("fs");
 const path = require("path");
 
 const DEFAULT_SETTINGS = Object.freeze({
+  launchOnStartup: false,
   selectedTheme: "ambientWave",
+  performanceMode: "balanced",
   ambientWave: Object.freeze({
     tone: "blue",
     sensitivity: "medium",
@@ -26,7 +28,11 @@ const DEFAULT_SETTINGS = Object.freeze({
     colorStyle: "multicolor",
     barThickness: "thick",
     sensitivity: "medium",
-    barDensity: "medium"
+    barDensity: "medium",
+    customColors: ["#00f2fe", "#4facfe", "#8ee2ff"],
+    customThickness: 4,
+    customGap: 7,
+    customSensitivity: 30
   }),
   flatRipples: Object.freeze({
     mode: "sideRipples",
@@ -59,39 +65,60 @@ const DEFAULT_SETTINGS = Object.freeze({
     glowStrength: "medium",
     colorStyle: "blue",
     edgeMode: "both"
+  }),
+  sideBraids: Object.freeze({
+    braidDensity: "medium",
+    motionStyle: "balanced",
+    glowStrength: "medium",
+    braidWidth: "medium",
+    colorStyle: "cyanPink",
+    flowDirection: "topDown",
+    customColors: ["#00e5ff", "#ff2d7b", "#8ee2ff"],
+    customThickness: 4,
+    customGap: 7,
+    customSensitivity: 30,
+    customSpeed: 30
   })
 });
 
-const VALID_MAIN_THEMES = new Set(["ambientWave", "reactiveBorder", "flowBorder", "sideBars", "flatRipples", "dotParticles", "rippleFlow", "snowBubbleParticles", "edgeCrystals"]);
-const VALID_AMBIENT_TONES = new Set(["blue", "purple", "warm"]);
-const VALID_LEVELS = new Set(["low", "medium", "high"]);
+const VALID_MAIN_THEMES = new Set(["ambientWave", "reactiveBorder", "flowBorder", "sideBars", "flatRipples", "dotParticles", "rippleFlow", "snowBubbleParticles", "edgeCrystals", "sideBraids"]);
+const VALID_PERFORMANCE_MODES = new Set(["performance", "balanced", "quality"]);
+const VALID_AMBIENT_TONES = new Set(["blue", "purple", "warm", "custom"]);
+const VALID_LEVELS = new Set(["low", "medium", "high", "custom"]);
 const VALID_EDGE_MODES = new Set(["top", "bottom", "both"]);
-const VALID_GLOW_STRENGTHS = new Set(["soft", "medium", "strong"]);
-const VALID_REACTIVE_COLOR_STYLES = new Set(["rainbow", "neonBlue", "neonPurple", "warmGlow"]);
-const VALID_BORDER_THICKNESS = new Set(["thin", "medium", "thick"]);
+const VALID_GLOW_STRENGTHS = new Set(["soft", "medium", "strong", "custom"]);
+const VALID_REACTIVE_COLOR_STYLES = new Set(["rainbow", "neonBlue", "neonPurple", "warmGlow", "custom"]);
+const VALID_BORDER_THICKNESS = new Set(["thin", "medium", "thick", "custom"]);
 const VALID_FLOW_DIRECTIONS = new Set(["clockwise", "anticlockwise"]);
-const VALID_FLOW_SPEEDS = new Set(["calm", "balanced", "energetic"]);
-const VALID_FLOW_SEGMENTS = new Set(["short", "medium", "long"]);
-const VALID_FLOW_COLOR_STYLES = new Set(["rainbow", "cool", "warm"]);
-const VALID_SIDE_BARS_COLOR_STYLES = new Set(["white", "yellow", "aqua", "multicolor"]);
-const VALID_SIDE_BARS_THICKNESS = new Set(["thin", "medium", "thick"]);
-const VALID_SIDE_BARS_DENSITY = new Set(["low", "medium", "high"]);
+const VALID_FLOW_SPEEDS = new Set(["calm", "balanced", "energetic", "custom"]);
+const VALID_FLOW_SEGMENTS = new Set(["short", "medium", "long", "custom"]);
+const VALID_FLOW_COLOR_STYLES = new Set(["rainbow", "cool", "warm", "custom"]);
+const VALID_SIDE_BARS_COLOR_STYLES = new Set(["white", "yellow", "aqua", "multicolor", "custom"]);
+const VALID_SIDE_BARS_THICKNESS = new Set(["thin", "medium", "thick", "custom"]);
+const VALID_SIDE_BARS_DENSITY = new Set(["low", "medium", "high", "custom"]);
 const VALID_FLAT_RIPPLES_MODES = new Set(["sideRipples", "flatRipples"]);
-const VALID_FLAT_RIPPLES_COLORS = new Set(["red", "blue", "white", "multicolor"]);
-const VALID_FLAT_RIPPLES_SPEEDS = new Set(["calm", "balanced", "energetic"]);
-const VALID_DOT_PARTICLES_MOTION_STYLES = new Set(["calm", "balanced", "energetic"]);
+const VALID_FLAT_RIPPLES_COLORS = new Set(["red", "blue", "white", "multicolor", "custom"]);
+const VALID_FLAT_RIPPLES_SPEEDS = new Set(["calm", "balanced", "energetic", "custom"]);
+const VALID_DOT_PARTICLES_MOTION_STYLES = new Set(["calm", "balanced", "energetic", "custom"]);
 const VALID_DOT_PARTICLES_DIRECTIONS = new Set(["mostlyClockwise", "mostlyAnticlockwise", "beatReactive"]);
 const VALID_RIPPLE_FLOW_MODES = new Set(["sideRipples", "flatRipples"]);
-const VALID_RIPPLE_FLOW_COLORS = new Set(["red", "blue", "white"]);
+const VALID_RIPPLE_FLOW_COLORS = new Set(["red", "blue", "white", "custom"]);
 const VALID_SNOW_FALL_AREAS = new Set(["middle", "fullWidth"]);
-const VALID_PARTICLE_SIZES = new Set(["small", "medium", "large"]);
-const VALID_EDGE_FLUTTER_STYLES = new Set(["soft", "balanced", "energetic"]);
-const VALID_EDGE_FLUTTER_COLORS = new Set(["blue", "purple", "red", "white"]);
+const VALID_PARTICLE_SIZES = new Set(["small", "medium", "large", "custom"]);
+const VALID_EDGE_FLUTTER_STYLES = new Set(["soft", "balanced", "energetic", "custom"]);
+const VALID_EDGE_FLUTTER_COLORS = new Set(["blue", "purple", "red", "white", "custom"]);
 const VALID_EDGE_FLUTTER_MODES = new Set(["left", "right", "both"]);
+const VALID_BRAID_DENSITY = new Set(["sparse", "medium", "dense", "custom"]);
+const VALID_BRAID_WIDTH = new Set(["thin", "medium", "thick", "custom"]);
+const VALID_BRAID_MOTION = new Set(["calm", "balanced", "energetic", "custom"]);
+const VALID_BRAID_COLORS = new Set(["cyanPink", "bluePurple", "redBlue", "white", "custom"]);
+const VALID_BRAID_DIRECTION = new Set(["topDown", "bottomUp"]);
 
 function createDefaultSettings() {
   return {
+    launchOnStartup: DEFAULT_SETTINGS.launchOnStartup,
     selectedTheme: DEFAULT_SETTINGS.selectedTheme,
+    performanceMode: DEFAULT_SETTINGS.performanceMode,
     ambientWave: { ...DEFAULT_SETTINGS.ambientWave },
     reactiveBorder: { ...DEFAULT_SETTINGS.reactiveBorder },
     flowBorder: { ...DEFAULT_SETTINGS.flowBorder },
@@ -100,7 +127,8 @@ function createDefaultSettings() {
     dotParticles: { ...DEFAULT_SETTINGS.dotParticles },
     rippleFlow: { ...DEFAULT_SETTINGS.rippleFlow },
     snowBubbleParticles: { ...DEFAULT_SETTINGS.snowBubbleParticles },
-    edgeCrystals: { ...DEFAULT_SETTINGS.edgeCrystals }
+    edgeCrystals: { ...DEFAULT_SETTINGS.edgeCrystals },
+    sideBraids: { ...DEFAULT_SETTINGS.sideBraids }
   };
 }
 
@@ -114,7 +142,8 @@ function createThemeDefaults() {
     dotParticles: { ...DEFAULT_SETTINGS.dotParticles },
     rippleFlow: { ...DEFAULT_SETTINGS.rippleFlow },
     snowBubbleParticles: { ...DEFAULT_SETTINGS.snowBubbleParticles },
-    edgeCrystals: { ...DEFAULT_SETTINGS.edgeCrystals }
+    edgeCrystals: { ...DEFAULT_SETTINGS.edgeCrystals },
+    sideBraids: { ...DEFAULT_SETTINGS.sideBraids }
   };
 }
 
@@ -143,7 +172,9 @@ function sanitizeAmbientWave(input = {}) {
     tone: pick(input.tone, VALID_AMBIENT_TONES, DEFAULT_SETTINGS.ambientWave.tone),
     sensitivity: pick(input.sensitivity, VALID_LEVELS, DEFAULT_SETTINGS.ambientWave.sensitivity),
     edgeMode: pick(input.edgeMode, VALID_EDGE_MODES, DEFAULT_SETTINGS.ambientWave.edgeMode),
-    glowStrength: pick(input.glowStrength, VALID_GLOW_STRENGTHS, DEFAULT_SETTINGS.ambientWave.glowStrength)
+    glowStrength: pick(input.glowStrength, VALID_GLOW_STRENGTHS, DEFAULT_SETTINGS.ambientWave.glowStrength),
+    customColors: input.customColors,
+    customSensitivity: input.customSensitivity
   };
 }
 
@@ -152,7 +183,10 @@ function sanitizeReactiveBorder(input = {}) {
     colorStyle: pick(input.colorStyle, VALID_REACTIVE_COLOR_STYLES, DEFAULT_SETTINGS.reactiveBorder.colorStyle),
     intensity: pick(input.intensity, VALID_LEVELS, DEFAULT_SETTINGS.reactiveBorder.intensity),
     borderThickness: pick(input.borderThickness, VALID_BORDER_THICKNESS, DEFAULT_SETTINGS.reactiveBorder.borderThickness),
-    glowStrength: pick(input.glowStrength, VALID_GLOW_STRENGTHS, DEFAULT_SETTINGS.reactiveBorder.glowStrength)
+    glowStrength: pick(input.glowStrength, VALID_GLOW_STRENGTHS, DEFAULT_SETTINGS.reactiveBorder.glowStrength),
+    customColors: input.customColors,
+    customThickness: input.customThickness,
+    customSensitivity: input.customSensitivity
   };
 }
 
@@ -162,16 +196,28 @@ function sanitizeFlowBorder(input = {}) {
     speedMode: pick(input.speedMode, VALID_FLOW_SPEEDS, DEFAULT_SETTINGS.flowBorder.speedMode),
     segmentLength: pick(input.segmentLength, VALID_FLOW_SEGMENTS, DEFAULT_SETTINGS.flowBorder.segmentLength),
     glowStrength: pick(input.glowStrength, VALID_GLOW_STRENGTHS, DEFAULT_SETTINGS.flowBorder.glowStrength),
-    colorStyle: pick(input.colorStyle, VALID_FLOW_COLOR_STYLES, DEFAULT_SETTINGS.flowBorder.colorStyle)
+    colorStyle: pick(input.colorStyle, VALID_FLOW_COLOR_STYLES, DEFAULT_SETTINGS.flowBorder.colorStyle),
+    customColors: input.customColors,
+    customThickness: input.customThickness,
+    customSensitivity: input.customSensitivity,
+    customSpeed: input.customSpeed
   };
 }
 
 function sanitizeSideBars(input = {}) {
+  const customColors = Array.isArray(input.customColors) && input.customColors.length === 3 
+      ? input.customColors 
+      : DEFAULT_SETTINGS.sideBars.customColors;
+
   return {
     colorStyle: pick(input.colorStyle, VALID_SIDE_BARS_COLOR_STYLES, DEFAULT_SETTINGS.sideBars.colorStyle),
     barThickness: pick(input.barThickness, VALID_SIDE_BARS_THICKNESS, DEFAULT_SETTINGS.sideBars.barThickness),
     sensitivity: pick(input.sensitivity, VALID_LEVELS, DEFAULT_SETTINGS.sideBars.sensitivity),
-    barDensity: pick(input.barDensity, VALID_SIDE_BARS_DENSITY, DEFAULT_SETTINGS.sideBars.barDensity)
+    barDensity: pick(input.barDensity, VALID_SIDE_BARS_DENSITY, DEFAULT_SETTINGS.sideBars.barDensity),
+    customColors,
+    customThickness: typeof input.customThickness === "number" ? input.customThickness : DEFAULT_SETTINGS.sideBars.customThickness,
+    customGap: typeof input.customGap === "number" ? input.customGap : DEFAULT_SETTINGS.sideBars.customGap,
+    customSensitivity: typeof input.customSensitivity === "number" ? input.customSensitivity : DEFAULT_SETTINGS.sideBars.customSensitivity
   };
 }
 
@@ -180,7 +226,10 @@ function sanitizeFlatRipples(input = {}) {
     mode: pick(input.mode, VALID_FLAT_RIPPLES_MODES, DEFAULT_SETTINGS.flatRipples.mode),
     intensity: pick(input.intensity, VALID_LEVELS, DEFAULT_SETTINGS.flatRipples.intensity),
     colorStyle: pick(input.colorStyle, VALID_FLAT_RIPPLES_COLORS, DEFAULT_SETTINGS.flatRipples.colorStyle),
-    speed: pick(input.speed, VALID_FLAT_RIPPLES_SPEEDS, DEFAULT_SETTINGS.flatRipples.speed)
+    speed: pick(input.speed, VALID_FLAT_RIPPLES_SPEEDS, DEFAULT_SETTINGS.flatRipples.speed),
+    customColors: input.customColors,
+    customSensitivity: input.customSensitivity,
+    customSpeed: input.customSpeed
   };
 }
 
@@ -189,7 +238,9 @@ function sanitizeDotParticles(input = {}) {
     density: pick(input.density, VALID_LEVELS, DEFAULT_SETTINGS.dotParticles.density),
     motionStyle: pick(input.motionStyle, VALID_DOT_PARTICLES_MOTION_STYLES, DEFAULT_SETTINGS.dotParticles.motionStyle),
     directionBehavior: pick(input.directionBehavior, VALID_DOT_PARTICLES_DIRECTIONS, DEFAULT_SETTINGS.dotParticles.directionBehavior),
-    glowStrength: pick(input.glowStrength, VALID_GLOW_STRENGTHS, DEFAULT_SETTINGS.dotParticles.glowStrength)
+    glowStrength: pick(input.glowStrength, VALID_GLOW_STRENGTHS, DEFAULT_SETTINGS.dotParticles.glowStrength),
+    customGap: input.customGap,
+    customSpeed: input.customSpeed
   };
 }
 
@@ -198,7 +249,9 @@ function sanitizeRippleFlow(input = {}) {
     mode: pick(input.mode, VALID_RIPPLE_FLOW_MODES, DEFAULT_SETTINGS.rippleFlow.mode),
     intensity: pick(input.intensity, VALID_LEVELS, DEFAULT_SETTINGS.rippleFlow.intensity),
     sensitivity: pick(input.sensitivity, VALID_LEVELS, DEFAULT_SETTINGS.rippleFlow.sensitivity),
-    colorStyle: pick(input.colorStyle, VALID_RIPPLE_FLOW_COLORS, DEFAULT_SETTINGS.rippleFlow.colorStyle)
+    colorStyle: pick(input.colorStyle, VALID_RIPPLE_FLOW_COLORS, DEFAULT_SETTINGS.rippleFlow.colorStyle),
+    customColors: input.customColors,
+    customSensitivity: input.customSensitivity
   };
 }
 
@@ -218,7 +271,27 @@ function sanitizeEdgeCrystals(input = {}) {
     density: pick(input.density, VALID_LEVELS, DEFAULT_SETTINGS.edgeCrystals.density),
     glowStrength: pick(input.glowStrength, VALID_GLOW_STRENGTHS, DEFAULT_SETTINGS.edgeCrystals.glowStrength),
     colorStyle: pick(input.colorStyle, VALID_EDGE_FLUTTER_COLORS, DEFAULT_SETTINGS.edgeCrystals.colorStyle),
-    edgeMode: pick(input.edgeMode, VALID_EDGE_FLUTTER_MODES, DEFAULT_SETTINGS.edgeCrystals.edgeMode)
+    edgeMode: pick(input.edgeMode, VALID_EDGE_FLUTTER_MODES, DEFAULT_SETTINGS.edgeCrystals.edgeMode),
+    customColors: input.customColors,
+    customGap: input.customGap,
+    customSensitivity: input.customSensitivity,
+    customSpeed: input.customSpeed
+  };
+}
+
+function sanitizeSideBraids(input = {}) {
+  return {
+    braidDensity: pick(input.braidDensity, VALID_BRAID_DENSITY, DEFAULT_SETTINGS.sideBraids.braidDensity),
+    motionStyle: pick(input.motionStyle, VALID_BRAID_MOTION, DEFAULT_SETTINGS.sideBraids.motionStyle),
+    glowStrength: pick(input.glowStrength, VALID_GLOW_STRENGTHS, DEFAULT_SETTINGS.sideBraids.glowStrength),
+    braidWidth: pick(input.braidWidth, VALID_BRAID_WIDTH, DEFAULT_SETTINGS.sideBraids.braidWidth),
+    colorStyle: pick(input.colorStyle, VALID_BRAID_COLORS, DEFAULT_SETTINGS.sideBraids.colorStyle),
+    flowDirection: pick(input.flowDirection, VALID_BRAID_DIRECTION, DEFAULT_SETTINGS.sideBraids.flowDirection),
+    customColors: input.customColors,
+    customThickness: typeof input.customThickness === "number" ? input.customThickness : DEFAULT_SETTINGS.sideBraids.customThickness,
+    customGap: typeof input.customGap === "number" ? input.customGap : DEFAULT_SETTINGS.sideBraids.customGap,
+    customSensitivity: typeof input.customSensitivity === "number" ? input.customSensitivity : DEFAULT_SETTINGS.sideBraids.customSensitivity,
+    customSpeed: typeof input.customSpeed === "number" ? input.customSpeed : DEFAULT_SETTINGS.sideBraids.customSpeed
   };
 }
 
@@ -274,7 +347,9 @@ function sanitizeSettings(input = {}) {
   const source = migrateLegacySettings(input);
 
   return {
+    launchOnStartup: typeof source.launchOnStartup === "boolean" ? source.launchOnStartup : DEFAULT_SETTINGS.launchOnStartup,
     selectedTheme: pick(source.selectedTheme, VALID_MAIN_THEMES, DEFAULT_SETTINGS.selectedTheme),
+    performanceMode: pick(source.performanceMode, VALID_PERFORMANCE_MODES, DEFAULT_SETTINGS.performanceMode),
     ambientWave: sanitizeAmbientWave(source.ambientWave),
     reactiveBorder: sanitizeReactiveBorder(source.reactiveBorder),
     flowBorder: sanitizeFlowBorder(source.flowBorder),
@@ -283,7 +358,8 @@ function sanitizeSettings(input = {}) {
     dotParticles: sanitizeDotParticles(source.dotParticles),
     rippleFlow: sanitizeRippleFlow(source.rippleFlow),
     snowBubbleParticles: sanitizeSnowBubbleParticles(source.snowBubbleParticles),
-    edgeCrystals: sanitizeEdgeCrystals(source.edgeCrystals)
+    edgeCrystals: sanitizeEdgeCrystals(source.edgeCrystals),
+    sideBraids: sanitizeSideBraids(source.sideBraids)
   };
 }
 

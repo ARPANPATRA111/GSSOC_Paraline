@@ -7,15 +7,20 @@ import ThemeShowcaseSection from "./components/sections/ThemeShowcaseSection";
 import CTASection from "./components/sections/CTASection";
 import Footer from "./components/Footer";
 import Sidebar from "./components/Sidebar";
+import InstallationGuide from "./components/pages/InstallationGuide";
+import TermsPage from "./components/pages/TermsPage";
+import PrivacyPolicy from "./components/pages/PrivacyPolicy";
+import FAQPage from "./components/pages/FAQPage";
 
-const downloadUrl = import.meta.env.VITE_DOWNLOAD_URL || "/downloads/Paraline-Setup.exe";
+const downloadUrl = import.meta.env.VITE_DOWNLOAD_URL || "https://github.com/SamXop123/Paraline/releases/download/v1.2.0/Paraline-Setup-1.2.0.exe";
 const isHostedInstaller = /^https?:\/\//.test(downloadUrl);
 const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID || "";
+const analyticsEnabled = import.meta.env.VITE_ENABLE_ANALYTICS === "true";
 const githubUrl = "https://github.com/SamXop123/Paraline";
 
 export default function App() {
   useEffect(() => {
-    if (!gaMeasurementId) {
+    if (!analyticsEnabled || !gaMeasurementId) {
       return undefined;
     }
 
@@ -56,6 +61,12 @@ export default function App() {
   };
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState("home");
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPage]);
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
     console.log(isSidebarOpen);
@@ -73,7 +84,12 @@ export default function App() {
         transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar 
+        isSidebarOpen={isSidebarOpen} 
+        toggleSidebar={toggleSidebar} 
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
 
       <div className="relative z-10">
         <header className="fixed inset-x-0 top-0 z-40 border border-gray-700 bg-[#02040c]/10 backdrop-blur-xl">
@@ -81,10 +97,14 @@ export default function App() {
             <button
               onClick={toggleSidebar}
               className="absolute top-5 left-5">
-                <img src='./sidebar-icons/menu.svg' className="h-8"/>
+                <img src='./sidebar-icons/menu.svg' className="h-8 w-10 object-contain"/>
             </button>
 
-            <a href="#hero" className="text-xs uppercase tracking-[0.45em] text-white/70 transition hover:text-white">
+            <a 
+              href="#hero" 
+              onClick={() => setCurrentPage("home")}
+              className="text-xs uppercase tracking-[0.45em] text-white/70 transition hover:text-white"
+            >
               Paraline
             </a>
             <div className="flex items-center gap-3">
@@ -109,23 +129,43 @@ export default function App() {
         </header>
 
         <main>
-          <HeroSection
-            downloadUrl={downloadUrl}
-            isHostedInstaller={isHostedInstaller}
-            onDownloadClick={() => trackDownloadClick("hero")}
-          />
-          <ExperienceSection />
-          <ThemeShowcaseSection />
-          <CTASection
-            downloadUrl={downloadUrl}
-            isHostedInstaller={isHostedInstaller}
-            onDownloadClick={() => trackDownloadClick("cta")}
-          />
+          {currentPage === "home" ? (
+            <>
+              <section id="hero" className="scroll-mt-28">
+                <HeroSection
+                  downloadUrl={downloadUrl}
+                  isHostedInstaller={isHostedInstaller}
+                  onDownloadClick={() => trackDownloadClick("hero")}
+                />
+              </section>
+              <section id="experience" className="scroll-mt-28">
+                <ExperienceSection />
+              </section>
+              <section id="themes" className="scroll-mt-28">
+                <ThemeShowcaseSection />
+              </section>
+              <section id="settings" className="scroll-mt-28">
+                <CTASection
+                  downloadUrl={downloadUrl}
+                  isHostedInstaller={isHostedInstaller}
+                  onDownloadClick={() => trackDownloadClick("cta")}
+                />
+              </section>
+            </>
+          ) : currentPage === "installation" ? (
+            <InstallationGuide setCurrentPage={setCurrentPage} />
+          ) : currentPage === "terms" ? (
+            <TermsPage setCurrentPage={setCurrentPage} />
+          ) : currentPage === "privacy" ? (
+            <PrivacyPolicy setCurrentPage={setCurrentPage} />
+          ) : currentPage === "faq" ? (
+            <FAQPage setCurrentPage={setCurrentPage} />
+          ) : null}
         </main>
-        <Footer />
+        <Footer setCurrentPage={setCurrentPage} />
       </div>
 
-      <Analytics />
+      {analyticsEnabled ? <Analytics /> : null}
     </div>
   );
 }

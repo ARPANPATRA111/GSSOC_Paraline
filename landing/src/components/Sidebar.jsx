@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
+export default function Sidebar({ isSidebarOpen, toggleSidebar, currentPage, setCurrentPage }) {
   return (
     <>
       {/* Backdrop overlay */}
@@ -41,17 +41,35 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
           <div className="flex flex-col gap-1 w-full">
             <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 mb-3 px-3 font-bold">Menu</p>
 
-            <SidebarItem icon="./sidebar-icons/home.svg" label="Home" active={true} />
-            <SidebarItem icon="./sidebar-icons/tools.svg" label="Installation Guide" />
-            <SidebarItem icon="./sidebar-icons/theme.svg" label="Themes" />
-            <SidebarItem icon="./sidebar-icons/settings.svg" label="Settings" />
+            <SidebarItem icon="./sidebar-icons/home.svg" label="Home" to="#hero" active={currentPage === "home"} onClick={() => {
+    setCurrentPage("home");
+    toggleSidebar();
+  }}/>
+            <SidebarItem icon="./sidebar-icons/tools.svg" label="Installation Guide" active={currentPage === "installation"}
+  onClick={() => {
+    setCurrentPage("installation");
+    toggleSidebar();
+  }}/>
+            <SidebarItem icon="./sidebar-icons/faq.svg" label="FAQ" active={currentPage === "faq"}
+  onClick={() => {
+    setCurrentPage("faq");
+    toggleSidebar();
+  }}/>
+            <SidebarItem icon="./sidebar-icons/theme.svg" label="Themes" to="#themes" onClick={() => {
+    setCurrentPage("home");
+    toggleSidebar();
+  }}/>
+            <SidebarItem icon="./sidebar-icons/settings.svg" label="Settings" to="#settings" onClick={() => {
+    setCurrentPage("home");
+    toggleSidebar();
+  }}/>
           </div>
 
           <div className="flex flex-col gap-1 w-full mt-10">
             <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 mb-3 px-3 font-bold">Support</p>
 
-            <SidebarItem icon="./sidebar-icons/customer-service.svg" label="Contact Us" />
-            <SidebarItem icon="./sidebar-icons/github-svgrepo-com.svg" label="Github" />
+            <SidebarItem icon="./sidebar-icons/customer-service.svg" label="Contact Us" to="https://github.com/SamXop123/Paraline/issues" external onClick={toggleSidebar}/>
+            <SidebarItem icon="./sidebar-icons/github-svgrepo-com.svg" label="Github" to="https://github.com/SamXop123/Paraline" external onClick={toggleSidebar} />
           </div>
         </div>
 
@@ -70,10 +88,14 @@ export default function Sidebar({ isSidebarOpen, toggleSidebar }) {
   );
 }
 
-function SidebarItem({ icon, label, active }) {
-  return (
-    <button className={`relative flex items-center w-full px-3 py-3.5 rounded-2xl transition-all duration-150 group overflow-hidden ${active ? 'bg-white/[0.08] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'text-gray-400 hover:text-white hover:bg-white/[0.04]'}`}>
-      {/* Hover background highlight */}
+function SidebarItem({ icon, label,to="#",external,active,onClick, shouldInvert = true }) {
+  const classes = `relative flex items-center w-full px-3 py-3.5 rounded-2xl transition-all duration-150 group overflow-hidden ${
+    active
+      ? "bg-white/[0.08] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+      : "text-gray-400 hover:text-white hover:bg-white/[0.04]"
+  }`;
+    const content= (
+      <>
       <div className="absolute inset-0 bg-gradient-to-r from-sky-500/0 via-sky-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
 
       {/* Active left border indicator */}
@@ -88,7 +110,7 @@ function SidebarItem({ icon, label, active }) {
         <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-150 ${active ? 'bg-white/10' : 'bg-transparent group-hover:bg-white/5'}`}>
           <img
             src={icon}
-            className={`h-[18px] invert transition-all duration-150 ${active ? 'opacity-100 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'opacity-50 group-hover:opacity-100 group-hover:scale-110'}`}
+            className={`h-[18px] transition-all duration-150 ${shouldInvert ? 'invert' : ''} ${active ? 'opacity-100 drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : 'opacity-50 group-hover:opacity-100 group-hover:scale-110'}`}
             alt={label}
           />
         </div>
@@ -96,6 +118,23 @@ function SidebarItem({ icon, label, active }) {
           {label}
         </span>
       </div>
-    </button>
+      </>
   );
+    // <button className={`relative flex items-center w-full px-3 py-3.5 rounded-2xl transition-all duration-150 group overflow-hidden ${active ? 'bg-white/[0.08] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]' : 'text-gray-400 hover:text-white hover:bg-white/[0.04]'}`}>
+    //   {/* Hover background highlight */}
+    // </button>
+if(external){
+  return(
+    <a href={to} target="_blank" rel="noopener noreferrer" onClick={onClick} className={classes}>{content}</a>
+  );
+}
+return(
+  <a
+    href={to}
+    onClick={onClick}
+    className={classes}
+    >
+      {content}
+    </a>
+)
 }

@@ -3,7 +3,10 @@
     clamp01,
     computeWrappedDistance,
     getGlowMultiplier,
-    resolveAnimatedColor
+    resolveAnimatedColor,
+    hexToHsl,
+    applyOptimizedShadow,
+    getPerformanceMultiplier
   } = window.ParalineShared;
 
   const RAINBOW_BORDER_INSET = 0;
@@ -15,19 +18,23 @@
   };
 
   function getFlowBorderStyle(settings) {
+    if (settings.colorStyle === "custom" && settings.customColors && settings.customColors.length >= 2) {
+      const hsl1 = hexToHsl(settings.customColors[0]);
+      const hsl2 = hexToHsl(settings.customColors[1]);
+      return { mode: "range", hueA: hsl1.h, hueB: hsl2.h, saturation: hsl1.s, lightness: hsl1.l };
+    }
     return FLOW_BORDER_STYLES[settings.colorStyle] || FLOW_BORDER_STYLES.rainbow;
   }
 
   function getFlowAudioMultiplier(settings) {
-    if (settings.speedMode === "calm") {
-      return 1.2;
-    }
+    let base = 1.5;
+    if (settings.speedMode === "calm") base = 1.2;
+    if (settings.speedMode === "energetic") base = 1.8;
 
-    if (settings.speedMode === "energetic") {
-      return 1.8;
+    if (settings.speedMode === "custom" && typeof settings.customSensitivity === "number") {
+      return base * (settings.customSensitivity / 30);
     }
-
-    return 1.5;
+    return base;
   }
 
   function getFlowDirectionValue(settings) {
@@ -35,6 +42,10 @@
   }
 
   function getFlowSegmentLength(settings) {
+    if (settings.segmentLength === "custom" && typeof settings.customThickness === "number") {
+      return settings.customThickness * 10;
+    }
+
     if (settings.segmentLength === "short") {
       return 14;
     }
@@ -46,7 +57,22 @@
     return 18;
   }
 
+  function getFlowBorderThickness(settings = {}) {
+    const custom = typeof settings.customThickness === "number" ? settings.customThickness : null;
+    if (settings.borderThickness === "custom" && custom !== null) {
+      return custom;
+    }
+    if (settings.borderThickness === "thin") return 1.5;
+    if (settings.borderThickness === "thick") return 3.5;
+    return 2.2;
+  }
+
   function getFlowSpeedProfile(settings) {
+    if (settings.speedMode === "custom" && typeof settings.customSpeed === "number") {
+      const scale = settings.customSpeed / 30;
+      return { base: 220 * scale, boost: 620 * scale };
+    }
+
     if (settings.speedMode === "calm") {
       return { base: 150, boost: 460 };
     }
@@ -72,7 +98,8 @@
       glowBlur,
       glowMultiplier,
       segmentLength,
-      colorStyle
+      colorStyle,
+      performanceMode = 'balanced'
     } = options;
 
     const edgeLength = Math.hypot(x2 - x1, y2 - y1);
@@ -80,6 +107,7 @@
     const leadDistance = ((travelDistance % perimeter) + perimeter) % perimeter;
     const oppositeLeadDistance = (leadDistance + perimeter * 0.5) % perimeter;
     const emphasisLength = perimeter * 0.3;
+    const perfMultiplier = getPerformanceMultiplier(performanceMode);
 
     for (let index = 0; index < segmentCount; index++) {
       const startT = index / segmentCount;
@@ -107,8 +135,10 @@
       context.lineTo(ex, ey);
       context.strokeStyle = color;
       context.lineWidth = thickness + trailStrength * (0.7 + glowMultiplier * 0.2);
-      context.shadowBlur = glowBlur * (0.45 + trailStrength * (0.85 + glowMultiplier * 0.2));
-      context.shadowColor = color;
+      
+      const optimizedBlur = glowBlur * (0.45 + trailStrength * (0.85 + glowMultiplier * 0.2)) * perfMultiplier;
+      applyOptimizedShadow(context, color, optimizedBlur, performanceMode);
+      
       context.stroke();
     }
   }
@@ -120,12 +150,13 @@
       height,
       smoothedLevel,
       flowTravelDistance,
-      settings
+      settings,
+      performanceMode = 'balanced'
     } = options;
 
     const colorStyle = getFlowBorderStyle(settings);
     const glowMultiplier = getGlowMultiplier(settings.glowStrength);
-    const thickness = 2.2 + smoothedLevel * (0.95 + glowMultiplier * 0.18);
+    const thickness = getFlowBorderThickness(settings) + smoothedLevel * (0.95 + glowMultiplier * 0.18);
     const edgeOffset = Math.max(1, thickness * 0.5) + 1;
     const left = RAINBOW_BORDER_INSET;
     const top = RAINBOW_BORDER_INSET;
@@ -143,10 +174,10 @@
     context.lineCap = "round";
     context.lineJoin = "round";
 
-    drawFlowBorderEdge(context, { x1: left, y1: top, x2: right, y2: top, startDistance: 0, perimeter, travelDistance, direction, thickness, glowBlur, glowMultiplier, segmentLength, colorStyle });
-    drawFlowBorderEdge(context, { x1: right, y1: top, x2: right, y2: bottom, startDistance: horizontal, perimeter, travelDistance, direction, thickness, glowBlur, glowMultiplier, segmentLength, colorStyle });
-    drawFlowBorderEdge(context, { x1: right, y1: bottom, x2: left, y2: bottom, startDistance: horizontal + vertical, perimeter, travelDistance, direction, thickness, glowBlur, glowMultiplier, segmentLength, colorStyle });
-    drawFlowBorderEdge(context, { x1: left, y1: bottom, x2: left, y2: top, startDistance: horizontal * 2 + vertical, perimeter, travelDistance, direction, thickness, glowBlur, glowMultiplier, segmentLength, colorStyle });
+    drawFlowBorderEdge(context, { x1: left, y1: top, x2: right, y2: top, startDistance: 0, perimeter, travelDistance, direction, thickness, glowBlur, glowMultiplier, segmentLength, colorStyle, performanceMode });
+    drawFlowBorderEdge(context, { x1: right, y1: top, x2: right, y2: bottom, startDistance: horizontal, perimeter, travelDistance, direction, thickness, glowBlur, glowMultiplier, segmentLength, colorStyle, performanceMode });
+    drawFlowBorderEdge(context, { x1: right, y1: bottom, x2: left, y2: bottom, startDistance: horizontal + vertical, perimeter, travelDistance, direction, thickness, glowBlur, glowMultiplier, segmentLength, colorStyle, performanceMode });
+    drawFlowBorderEdge(context, { x1: left, y1: bottom, x2: left, y2: top, startDistance: horizontal * 2 + vertical, perimeter, travelDistance, direction, thickness, glowBlur, glowMultiplier, segmentLength, colorStyle, performanceMode });
   }
 
   window.ParalineFlowBorder = {
