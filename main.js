@@ -1235,7 +1235,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle("theme-profiles:get", () => {
-  return getThemeProfiles();
+    return getThemeProfiles();
   });
 
   ipcMain.handle("theme-profiles:save", (_event, profileName) => {
@@ -1248,6 +1248,11 @@ app.whenReady().then(() => {
 
   ipcMain.handle("theme-profiles:delete", (_event, profileName) => {
     return deleteThemeProfile(profileName);
+  });
+
+  ipcMain.handle("theme-profiles:reset", () => {
+    resetAllSettings();
+    return getRendererSettings();
   });
 
   ipcMain.handle("theme-profiles:export", async (_event, profileName) => {
@@ -1281,39 +1286,46 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle("theme-profiles:import", async () => {
-    const result = await dialog.showOpenDialog({
-      title: "Import Theme Profile",
-      filters: [
-        {
-          name: "JSON Files",
-          extensions: ["json"]
-        }
-      ],
-      properties: ["openFile"]
-    });
+    try {
+      const result = await dialog.showOpenDialog({
+        title: "Import Theme Profile",
+        filters: [
+          {
+            name: "JSON Files",
+            extensions: ["json"]
+          }
+        ],
+        properties: ["openFile"]
+      });
 
-    if (result.canceled || result.filePaths.length === 0) {
-      return { success: false };
+      if (result.canceled || result.filePaths.length === 0) {
+        return { success: false };
+      }
+
+      const filePath = result.filePaths[0];
+      const importedProfile = JSON.parse(
+        require("fs").readFileSync(filePath, "utf8")
+      );
+
+      // Validate imported profile structure
+      if (!importedProfile || typeof importedProfile !== "object" || Array.isArray(importedProfile)) {
+        return { success: false, error: "Invalid theme profile format" };
+      }
+
+      const profileName = path.basename(filePath, ".json");
+      const profiles = settingsStore.loadProfiles();
+
+      profiles[profileName] = importedProfile;
+      settingsStore.saveProfiles(profiles);
+
+      return {
+        success: true,
+        profileName
+      };
+    } catch (error) {
+      console.error("Failed to import theme profile:", error);
+      return { success: false, error: error.message };
     }
-
-    const filePath = result.filePaths[0];
-
-    const importedProfile = JSON.parse(
-      require("fs").readFileSync(filePath, "utf8")
-    );
-
-    const profileName = path.basename(filePath, ".json");
-
-    const profiles = settingsStore.loadProfiles();
-
-    profiles[profileName] = importedProfile;
-
-    settingsStore.saveProfiles(profiles);
-
-    return {
-      success: true,
-      profileName
-    };
   });
   
   ipcMain.handle("app:open-external", (_event, url) => {

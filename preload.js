@@ -67,5 +67,8 @@ contextBridge.exposeInMainWorld("paralineApp", {
     ipcRenderer.invoke("theme-profiles:export", profileName),
 
   importThemeProfile: () =>
-    ipcRenderer.invoke("theme-profiles:import")
+    ipcRenderer.invoke("theme-profiles:import"),
+
+  resetThemeSettings: () =>
+    ipcRenderer.invoke("theme-profiles:reset")
 });

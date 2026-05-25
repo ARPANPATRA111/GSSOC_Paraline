@@ -389,61 +389,71 @@ refreshThemeProfiles();
         const btnGithub = document.getElementById('btn-github');
         const btnLanding = document.getElementById('btn-landing');
         btnSaveThemeProfile.addEventListener('click', async () => {
-        const profileName = themeProfileNameInput.value.trim();
+            const profileName = themeProfileNameInput.value.trim();
 
-        if (!profileName) return;
+            if (!profileName) return;
 
-        await window.paralineApp.saveThemeProfile(profileName);
+            await window.paralineApp.saveThemeProfile(profileName);
 
-        themeProfileNameInput.value = '';
+            themeProfileNameInput.value = '';
+            alert(`Theme profile "${profileName}" saved!`);
 
-        refreshThemeProfiles();
+            refreshThemeProfiles();
         });
 
-    btnLoadThemeProfile.addEventListener('click', async () => {
-        const selectedProfile = themeProfileSelector.value;
+        btnLoadThemeProfile.addEventListener('click', async () => {
+            const selectedProfile = themeProfileSelector.value;
 
-        if (!selectedProfile) return;
+            if (!selectedProfile) return;
 
-        const settings =
-            await window.paralineApp.loadThemeProfile(selectedProfile);
+            const settings =
+                await window.paralineApp.loadThemeProfile(selectedProfile);
 
-        if (!settings) return;
+            if (!settings) return;
 
-        cachedSettings = settings;
+            // Instantly reloads the page to perfectly synchronize all sliders, colors, and controls in the UI
+            location.reload();
+        });
 
-        themeSelector.value = settings.selectedTheme;
+        btnDeleteThemeProfile.addEventListener('click', async () => {
+            const selectedProfile = themeProfileSelector.value;
 
-        renderThemeSettings(settings.selectedTheme);
-    });
+            if (!selectedProfile) return;
 
-    btnDeleteThemeProfile.addEventListener('click', async () => {
-        const selectedProfile = themeProfileSelector.value;
+            await window.paralineApp.deleteThemeProfile(selectedProfile);
+            alert("Theme profile deleted successfully.");
 
-        if (!selectedProfile) return;
+            refreshThemeProfiles();
+        });
 
-        await window.paralineApp.deleteThemeProfile(selectedProfile);
+        btnExportThemeProfile.addEventListener('click', async () => {
+            const selectedProfile = themeProfileSelector.value;
 
-        refreshThemeProfiles();
-    });
+            if (!selectedProfile) return;
 
-    btnExportThemeProfile.addEventListener('click', async () => {
-        const selectedProfile = themeProfileSelector.value;
+            const res = await window.paralineApp.exportThemeProfile(selectedProfile);
+            if (res && res.success) {
+                alert("Theme profile exported successfully!");
+            }
+        });
 
-        if (!selectedProfile) return;
+        btnImportThemeProfile.addEventListener('click', async () => {
+            const res = await window.paralineApp.importThemeProfile();
 
-        await window.paralineApp.exportThemeProfile(selectedProfile);
-    });
+            if (res && res.success) {
+                alert(`Theme profile "${res.profileName}" imported successfully!`);
+                refreshThemeProfiles();
+            } else if (res && res.error) {
+                alert(`Failed to import theme: ${res.error}`);
+            }
+        });
 
-    btnImportThemeProfile.addEventListener('click', async () => {
-        await window.paralineApp.importThemeProfile();
-
-        refreshThemeProfiles();
-    });
-
-    btnResetThemeProfile.addEventListener('click', async () => {
-        location.reload();
-    });
+        btnResetThemeProfile.addEventListener('click', async () => {
+            if (confirm("Are you sure you want to restore default settings? This will reset all your theme customizations.")) {
+                await window.paralineApp.resetThemeSettings();
+                location.reload();
+            }
+        });
 
         btnHide.addEventListener('click', async () => {
             const isHidden = await window.paralineApp.toggleHide();
