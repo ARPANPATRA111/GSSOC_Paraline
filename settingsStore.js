@@ -555,5 +555,6 @@ module.exports = {
   DEFAULT_SETTINGS,
   createDefaultSettings,
   createThemeDefaults,
-  createSettingsStore
+  createSettingsStore,
+  sanitizeSettings
 };

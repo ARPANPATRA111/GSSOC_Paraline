@@ -1,7 +1,8 @@
 const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, screen, shell, dialog } = require("electron");
 const path = require("path");
+const fs = require("fs");
 const { createAudioBridge } = require("./audioBridge");
-const { createDefaultSettings, createSettingsStore, createThemeDefaults } = require("./settingsStore");
+const { createDefaultSettings, createSettingsStore, createThemeDefaults, sanitizeSettings } = require("./settingsStore");
 
 let overlayWindow;
 let lastBridgeMode = null;
@@ -1316,6 +1317,14 @@ app.whenReady().then(() => {
       }
 
       const filePath = result.filePaths[0];
+
+      // Check file size (100KB limit to prevent DoS attacks)
+      const stats = fs.statSync(filePath);
+      const MAX_FILE_SIZE = 100 * 1024; // 100KB
+      if (stats.size > MAX_FILE_SIZE) {
+        return { success: false, error: "File too large. Maximum size is 100KB." };
+      }
+
       const importedProfile = JSON.parse(
         require("fs").readFileSync(filePath, "utf8")
       );
@@ -1325,10 +1334,13 @@ app.whenReady().then(() => {
         return { success: false, error: "Invalid theme profile format" };
       }
 
+      // Sanitize the imported profile to prevent prototype pollution and arbitrary property injection
+      const sanitizedProfile = sanitizeSettings(importedProfile);
+
       const profileName = path.basename(filePath, ".json");
       const profiles = settingsStore.loadProfiles();
 
-      profiles[profileName] = importedProfile;
+      profiles[profileName] = sanitizedProfile;
       settingsStore.saveProfiles(profiles);
 
       return {
