@@ -1161,6 +1161,7 @@ function createTray() {
 }
 
 app.whenReady().then(() => {
+  Menu.setApplicationMenu(null);
   settingsStore = createSettingsStore(app.getPath("userData"));
   visualizerSettings = settingsStore.save(settingsStore.load());
   applyStartupSettings(visualizerSettings.launchOnStartup);
