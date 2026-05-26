@@ -1,4 +1,32 @@
-const { contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer, webFrame } = require("electron");
+
+// Reset zoom factor and disable zoom completely to prevent layout distortion in the visualizer and settings windows
+try {
+  webFrame.setZoomFactor(1.0);
+  webFrame.setZoomLevel(0);
+  webFrame.setVisualZoomLevelLimits(1, 1);
+} catch (err) {
+  console.warn("Failed to set webFrame zoom limits:", err);
+}
+
+// Block Ctrl/Cmd + zoom keyboard shortcuts (+, -, 0)
+window.addEventListener("keydown", (e) => {
+  const isCmdOrCtrl = e.ctrlKey || e.metaKey;
+  if (isCmdOrCtrl) {
+    const key = e.key;
+    if (key === "=" || key === "-" || key === "+" || key === "0" || key === "_" || e.keyCode === 187 || e.keyCode === 189 || e.keyCode === 48) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+}, { capture: true });
+
+// Block Ctrl/Cmd + mouse wheel zoom
+window.addEventListener("wheel", (e) => {
+  if (e.ctrlKey || e.metaKey) {
+    e.preventDefault();
+  }
+}, { passive: false });
 
 contextBridge.exposeInMainWorld("audioBridge", {
   onLevel(listener) {
