@@ -7,18 +7,31 @@ class ThemeAgent {
 
   start() {
     this.stop(); 
-    const config = this.settingsStore.load().themeAutomation;
     
-    if (!config || !config.enabled) return;
+    const storeData = this.settingsStore.load() || {};
+    const config = storeData.themeAutomation;
+    
+    // Defensive check: Ensure config is a valid object and is enabled
+    if (!config || typeof config !== 'object' || !config.enabled) return;
 
-    // Convert minutes to milliseconds for the background timer
-    const intervalMs = (config.checkIntervalMinutes || 30) * 60 * 1000;
+    // Guard: Prevent invalid, negative, or tight-loop intervals (minimum 1 minute)
+    let minutes = parseInt(config.checkIntervalMinutes, 10);
+    if (isNaN(minutes) || minutes < 1) {
+      minutes = 30; // Safe default fallback
+    }
+    const intervalMs = minutes * 60 * 1000;
+    
     this.evaluateAndApplyTheme(config);
     
     this.intervalId = setInterval(() => {
-      // FIXED: Swapped .get() for .load()
-      const currentConfig = this.settingsStore.load().themeAutomation;
-      this.evaluateAndApplyTheme(currentConfig);
+      const currentStoreData = this.settingsStore.load() || {};
+      const currentConfig = currentStoreData.themeAutomation;
+      
+      if (currentConfig && typeof currentConfig === 'object' && currentConfig.enabled) {
+        this.evaluateAndApplyTheme(currentConfig);
+      } else {
+        this.stop(); // Stop if disabled during active interval
+      }
     }, intervalMs);
   }
 
@@ -30,15 +43,15 @@ class ThemeAgent {
   }
 
   evaluateAndApplyTheme(config) {
-    if (!config.enabled) return;
+    if (!config || typeof config !== 'object' || !config.enabled) return;
 
     try {
       const currentHour = new Date().getHours();
       const isDaytime = currentHour >= 6 && currentHour < 18; // 6 AM to 6 PM
       const targetTheme = isDaytime ? config.dayTheme : config.nightTheme;
 
-      // FIXED: Swapped .get() for .load().selectedTheme
-      if (targetTheme && this.settingsStore.load().selectedTheme !== targetTheme) {
+      const storeData = this.settingsStore.load() || {};
+      if (targetTheme && storeData.selectedTheme !== targetTheme) {
         console.log(`[ThemeAgent] Switching theme to: ${targetTheme}`); 
         this.applyThemeCallback(targetTheme);
       }
