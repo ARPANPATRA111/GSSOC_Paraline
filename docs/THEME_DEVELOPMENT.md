@@ -73,8 +73,8 @@ After the theme file exists, connect it in the files that already know about the
 2. In `renderer.js`, destructure your draw function from `window.ParalineMyNewTheme`.
 3. Add your theme ID to the selected-theme validation list in `renderer.js`.
 4. Add a branch in the render loop that calls your draw function with the options it needs.
-5. Add default settings in `createThemeDefaults()` inside `settingsStore.js`.
-6. Add the theme ID anywhere valid theme IDs are listed or sanitized in `settingsStore.js`.
+5. Add the theme's default settings to `DEFAULT_SETTINGS` in `settingsStore.js`.
+6. Add the theme ID anywhere valid theme IDs are listed, copied, or sanitized in `settingsStore.js`, including `VALID_MAIN_THEMES`, `createDefaultSettings()`, `createThemeDefaults()`, and `sanitizeSettings()`.
 7. Add a schema entry in `settings.js` if the theme has user-facing controls.
 8. Add labels and menu options in `main.js` so the theme appears in the tray and reset flows.
 
@@ -84,7 +84,7 @@ Use an existing theme with similar behavior as the model. For example, a border-
 
 Theme settings are plain objects stored under the theme ID. If your theme ID is `myNewTheme`, the renderer expects values under `visualizerState.myNewTheme`.
 
-Defaults belong in `settingsStore.js`. UI controls belong in the schema inside `settings.js`. The renderer merges incoming settings into `visualizerState`, then passes the active theme's settings into the draw function. Do not mutate the settings object inside the theme. If you need a derived value, calculate it locally:
+Defaults belong in the `DEFAULT_SETTINGS` object in `settingsStore.js`. After adding the default object, make sure the same theme key is copied by `createDefaultSettings()` and `createThemeDefaults()`, validated in `VALID_MAIN_THEMES`, and returned from `sanitizeSettings()` through a theme-specific sanitizer. UI controls belong in the schema inside `settings.js`. The renderer merges incoming settings into `visualizerState`, then passes the active theme's settings into the draw function. Do not mutate the settings object inside the theme. If you need a derived value, calculate it locally:
 
 ```javascript
 function getMyThemeThickness(settings) {
@@ -175,7 +175,7 @@ Before opening a pull request, check that the new theme is fully wired:
 2. The theme registers a unique `window.Paraline...` object.
 3. `renderer.js` imports and calls the draw function.
 4. `renderer.js` accepts the theme ID as a valid selected theme.
-5. `settingsStore.js` defines defaults and sanitizes the theme ID/settings.
+5. `settingsStore.js` defines defaults in `DEFAULT_SETTINGS`, copies the theme key into default settings, and sanitizes the theme ID/settings.
 6. `settings.js` exposes any controls the theme needs.
 7. `main.js` includes the theme in tray menu labels/options and reset handling.
 8. The app still runs if the theme settings are missing or partially saved from an older version.
