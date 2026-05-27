@@ -193,6 +193,59 @@ document.addEventListener('DOMContentLoaded', () => {
         customSpeed.style.display = showSpeed ? 'block' : 'none';
     }
 
+    // ----------------------------------------
+    // THEME AUTOMATION AGENT BINDINGS
+    // ----------------------------------------
+    const enableThemeAutomation = document.getElementById('enableThemeAutomation');
+    const themeAutoControls = document.getElementById('themeAutoControls');
+    const intervalMinutes = document.getElementById('intervalMinutes');
+    const dayThemeSelect = document.getElementById('dayThemeSelect');
+    const nightThemeSelect = document.getElementById('nightThemeSelect');
+
+    function toggleAutoControls(isEnabled) {
+        if (themeAutoControls) {
+            themeAutoControls.style.display = isEnabled ? 'block' : 'none';
+        }
+    }
+
+    function updateAutomationSetting(patch) {
+        if (window.visualizerSettings) {
+            const currentAutomation = cachedSettings.themeAutomation || {};
+            const nextAutomation = { ...currentAutomation, ...patch };
+            cachedSettings.themeAutomation = nextAutomation; // Optimistic local cache update!
+            window.visualizerSettings.update({
+                themeAutomation: nextAutomation
+            });
+        }
+    }
+
+    if (enableThemeAutomation) {
+        enableThemeAutomation.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            toggleAutoControls(isChecked);
+            updateAutomationSetting({ enabled: isChecked });
+        });
+    }
+
+    if (intervalMinutes) {
+        intervalMinutes.addEventListener('change', (e) => {
+            const val = parseInt(e.target.value, 10) || 30;
+            updateAutomationSetting({ checkIntervalMinutes: val });
+        });
+    }
+
+    if (dayThemeSelect) {
+        dayThemeSelect.addEventListener('change', (e) => {
+            updateAutomationSetting({ dayTheme: e.target.value });
+        });
+    }
+
+    if (nightThemeSelect) {
+        nightThemeSelect.addEventListener('change', (e) => {
+            updateAutomationSetting({ nightTheme: e.target.value });
+        });
+    }
+
     const themeSelector = document.getElementById('theme-selector');
     themeSelector.addEventListener('change', (e) => {
         renderThemeSettings(e.target.value);
@@ -600,6 +653,24 @@ refreshThemeProfiles();
                     updateFpsOutcomeDisplay(settings.fpsLimit);
                 }
             }
+
+            // Load theme automation settings
+            if (settings.themeAutomation) {
+                const automation = settings.themeAutomation;
+                if (enableThemeAutomation) {
+                    enableThemeAutomation.checked = !!automation.enabled;
+                    toggleAutoControls(automation.enabled);
+                }
+                if (intervalMinutes) {
+                    intervalMinutes.value = automation.checkIntervalMinutes || 30;
+                }
+                if (dayThemeSelect) {
+                    dayThemeSelect.value = automation.dayTheme || "ambientWave";
+                }
+                if (nightThemeSelect) {
+                    nightThemeSelect.value = automation.nightTheme || "reactiveBorder";
+                }
+            }
             
             // set custom variables into UI if they exist globally or on the active theme
             if (settings.customColors && settings.customColors.length === 3) {
@@ -622,6 +693,26 @@ refreshThemeProfiles();
 
         // Realtime dynamic synchronization when toggled from the tray context menu
         window.visualizerSettings.onChange((nextSettings) => {
+            Object.assign(cachedSettings, nextSettings);
+            
+            // Sync theme automation properties if updated from outside
+            if (nextSettings.themeAutomation) {
+                const automation = nextSettings.themeAutomation;
+                if (enableThemeAutomation && automation.enabled !== undefined) {
+                    enableThemeAutomation.checked = !!automation.enabled;
+                    toggleAutoControls(automation.enabled);
+                }
+                if (intervalMinutes && automation.checkIntervalMinutes !== undefined) {
+                    intervalMinutes.value = automation.checkIntervalMinutes;
+                }
+                if (dayThemeSelect && automation.dayTheme !== undefined) {
+                    dayThemeSelect.value = automation.dayTheme;
+                }
+                if (nightThemeSelect && automation.nightTheme !== undefined) {
+                    nightThemeSelect.value = automation.nightTheme;
+                }
+            }
+
             if (nextSettings.paused !== undefined) {
                 updatePauseButtonState(nextSettings.paused);
             }
