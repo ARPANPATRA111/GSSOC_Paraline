@@ -432,6 +432,7 @@ refreshThemeProfiles();
         const btnPause = document.getElementById('btn-pause');
         const btnReload = document.getElementById('btn-reload');
         const btnGithub = document.getElementById('btn-github');
+        const btnUpdates = document.getElementById('btn-updates');
         const btnLanding = document.getElementById('btn-landing');
         btnSaveThemeProfile.addEventListener('click', async () => {
             const profileName = themeProfileNameInput.value.trim();
@@ -517,6 +518,11 @@ refreshThemeProfiles();
         btnGithub.addEventListener('click', () => {
             window.paralineApp.openExternal("https://github.com/SamXop123/Paraline");
         });
+
+        btnUpdates.addEventListener('click', () => {
+            window.paralineApp.openExternal("https://github.com/SamXop123/Paraline/releases");
+        });
+
         btnLanding.addEventListener('click', () => {
             window.paralineApp.openExternal("https://paraline.vercel.app");
         });
