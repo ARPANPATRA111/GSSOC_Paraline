@@ -1,5 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, screen, shell, dialog, powerMonitor } = require("electron");
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, screen, shell, dialog, nativeTheme, systemPreferences } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu, Tray, nativeImage, screen, shell, dialog, nativeTheme, systemPreferences, powerMonitor } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const { createAudioBridge } = require("./audioBridge");
@@ -247,6 +246,7 @@ function updateSettings(nextSettings) {
   // Re-apply focus mode whenever settings change
   if (nextSettings.focusMode !== undefined) {
     applyFocusModeState();
+  }
   if (nextSettings.themeAutomation !== undefined && themeAgent) {
     themeAgent.start();
   }
